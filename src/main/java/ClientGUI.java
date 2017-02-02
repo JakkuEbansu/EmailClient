@@ -3,25 +3,31 @@ import javax.swing.*;
 
 public class ClientGUI
 {
-    public static void main(String[] args)
+    public static void setup()
     {
-        int gui_panes_line = 0;
-
-        int desiredNoPanes;
-
         //Read from GUI data for desired number of panes, and pane content (desired tags to be displayed)
-        desiredNoPanes = Integer.parseInt(SkeletonClient.readFileContents("gUIData.txt", gui_panes_line));
+        int desiredNoPanes = Integer.parseInt(SkeletonClient.readFileContents("panesData.txt", 0));
+        int desiredNoSections = Integer.parseInt(SkeletonClient.readFileContents("sectionsData.txt", 0));
 
         String[] panes = new String[desiredNoPanes];
+        String[] sections = new String[desiredNoSections];
 
+        //Read line by line into the data files - for each line, the corresponding pane stores its' associated tag
+        //Or section-label
         for(int i = 1; i <= desiredNoPanes; i++)
         {
-            //Read desired tag(s) from GUI data file
-            panes[i] = SkeletonClient.readFileContents("gUIData.txt", i);
+            //Read desired tag(s) from panes data file
+            panes[i] = SkeletonClient.readFileContents("panesData.txt", i);
+        }
+
+        for(int i = 1; i <= desiredNoSections; i++)
+        {
+            //Read desired section(s) from panes data file
+            sections[i] = SkeletonClient.readFileContents("sectionsData.txt", i);
         }
 
         //Initialise - draw window, basic components
-        drawWindow(panes);
+        drawWindow(panes, sections);
     }
 
     private static int drawWindow(String[] panes, String[] sections)
@@ -57,7 +63,8 @@ public class ClientGUI
 
             //Load emails based on relevant tag, add to container -
             //Stored in panes[i]
-            //TODO: Load based on saved tags
+            //TODO: Load based on saved tags - may need to rework how search works, to account for saved and
+            //TODO: multiple tags
             SkeletonClient.searchRetrieve(panes[i]);
 
             panesPanel.add(tempScrollPane);

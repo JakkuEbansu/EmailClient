@@ -17,8 +17,7 @@ public class SkeletonClient
         retrieveEmail(mailHost, userName, password);
 
         //Call GUI
-        ClientGUI.main();
-
+        ClientGUI.setup();
     }
 
     //Allows reading of particular line in a data file
@@ -229,8 +228,29 @@ public class SkeletonClient
     public static eMailObject[] tagSearch(String search){
 
         //Break string into String[] array
-        //Divide into individual searches, based on components, run searches
+        String[] tags = search.split(" ");
+
+        eMailObject[] completedSearch;
+
+        if (tags.length > 1)
+        {
+            eMailObject[] temporarySearchResults;
+
+            //Divide into individual searches, based on components, run searches
+            for (int i = 0; i <= tags.length; i++)
+            {
+                if ()
+                temporarySearchResults = searchRetrieve(tags[i], operation).clone();
+            }
+        }
+        else
+        {
+            completedSearch = searchRetrieve(tags[0], operation);
+        }
+
         //AND/OR implementation
+
         //Return combined search
+        return completedSearch;
     }
 }
