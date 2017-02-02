@@ -65,7 +65,7 @@ public class ClientGUI
             //Stored in panes[i]
             //TODO: Load based on saved tags - may need to rework how search works, to account for saved and
             //TODO: multiple tags
-            SkeletonClient.searchRetrieve(panes[i]);
+            SkeletonClient.searchQuery(panes[i]);
 
             panesPanel.add(tempScrollPane);
         }

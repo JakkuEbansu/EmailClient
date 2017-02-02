@@ -173,84 +173,70 @@ public class SkeletonClient
         return 0;
     }
 
-    //Retrieve emails from database, dependant on tag
-    public static eMailObject[] searchRetrieve(String searchTag, int operation)
+    //Retrieve emails from database, dependant on query
+    public static eMailObject[] searchQuery(String[] providedQuery, String tagName)
     {
         //Set up connection to database
         EntityManagerFactory emf =
                 Persistence.createEntityManagerFactory("$objectdb/db/gnocchiEmailStorage.odb");
         EntityManager em = emf.createEntityManager();
 
-        //Alter tag for SQL operations - allow wildcards on either side
-        searchTag = "%" + searchTag + "%";
-
         TypedQuery<eMailObject> tagQuery;
 
-        switch(operation)
+        int counter = 0;
+
+        String completeQuery = "SELECT eMail FROM eMailObject email WHERE ";
+
+        while (counter < providedQuery.length)
         {
-            //TODO: Fix searches, implement date-ranges
-            case 1 : //Contains
-                //Create query, with parameters where tag is a substring of string
-                tagQuery = em.createQuery(
-                        "SELECT eMail FROM eMailObject email WHERE eMail.body LIKE :tag",
-                        eMailObject.class);
+            //If there is a logical operator, concatenate to the SQL query and add a space
+            if (providedQuery[counter].equalsIgnoreCase("AND") || providedQuery[counter].equalsIgnoreCase("OR") ||
+                    providedQuery[counter].equalsIgnoreCase("NOT"))
+            {
+                completeQuery = completeQuery.concat(providedQuery[counter].toUpperCase() + " ");
+                counter++;
+            }
 
-            case 2 : //Sender-match
-                //Create query, with parameters where sender matches query
-                tagQuery = em.createQuery(
-                        "SELECT eMail FROM eMailObject email WHERE eMail.senders LIKE :tag",
-                        eMailObject.class);
+            //Contains - check if email contains the search term
+            else if (providedQuery[counter].equalsIgnoreCase("Contains"))
+            {
+                //WHERE email body contains search term
+                completeQuery = completeQuery.concat("eMail.body LIKE %" + providedQuery[counter + 1] + "% ");
 
-            case 3 : //Date-match
-                //Create query, with parameters where date matches query
-                tagQuery = em.createQuery(
-                        "SELECT eMail FROM eMailObject email WHERE eMail.sentDate LIKE :tag",
-                        eMailObject.class);
+                //OR
+                completeQuery = completeQuery.concat("OR ");
 
-            default :
-                //Create query, with parameters where tag is a substring of string
-                tagQuery = em.createQuery(
-                        "SELECT eMail FROM eMailObject email WHERE eMail.body LIKE :tag",
-                        eMailObject.class);
+                //Email subject contains search term
+                completeQuery = completeQuery.concat("eMail.subject LIKE %" + providedQuery[counter + 1] + "% ");
+
+                //Adds two to counter, skipping past search-term
+                counter = counter + 2;
+            }
+
+            else if (providedQuery[counter].equalsIgnoreCase("Sender "))
+            {
+                //WHERE email sender contains search term
+                completeQuery = completeQuery.concat("eMail.senders LIKE %" + providedQuery[counter + 1] + "% ");
+                counter = counter + 2;
+            }
+
+            else if (providedQuery[counter].equalsIgnoreCase("Date-Match "))
+            {
+                //WHERE email sent date matches query
+                completeQuery = completeQuery.concat("eMail.sentDate LIKE %" + providedQuery[counter + 1] + "% ");
+                counter = counter + 2;
+            }
         }
 
+        tagQuery = em.createQuery(completeQuery, eMailObject.class);
 
         //Return results as List
-        tagQuery.setParameter("tag", searchTag);
+        tagQuery.setParameter("tag", tagName);
         List<eMailObject> results = tagQuery.getResultList();
 
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];
         results.toArray(resultsAsArray);
         return resultsAsArray;
-    }
-
-    public static eMailObject[] tagSearch(String search){
-
-        //Break string into String[] array
-        String[] tags = search.split(" ");
-
-        eMailObject[] completedSearch;
-
-        if (tags.length > 1)
-        {
-            eMailObject[] temporarySearchResults;
-
-            //Divide into individual searches, based on components, run searches
-            for (int i = 0; i <= tags.length; i++)
-            {
-                if ()
-                temporarySearchResults = searchRetrieve(tags[i], operation).clone();
-            }
-        }
-        else
-        {
-            completedSearch = searchRetrieve(tags[0], operation);
-        }
-
-        //AND/OR implementation
-
-        //Return combined search
-        return completedSearch;
     }
 }
