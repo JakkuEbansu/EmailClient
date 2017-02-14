@@ -1,7 +1,6 @@
 import javax.mail.*;
 import java.io.*;
 import javax.persistence.*;
-import javax.persistence.criteria.*;
 import java.util.*;
 
 public class SkeletonClient
@@ -152,7 +151,7 @@ public class SkeletonClient
         //Management of entities, prior to storage - essentially, creating a transaction
         //to push to the database
         EntityManagerFactory emf =
-                Persistence.createEntityManagerFactory("$objectdb/db/gnocchiEmailStorage.odb");
+                Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
         EntityManager em = emf.createEntityManager();
 
         em.getTransaction().begin();
@@ -167,10 +166,35 @@ public class SkeletonClient
         em.getTransaction().commit();
 
         //Close connections to database
-        //em.close();
-        //emf.close();
+        em.close();
+        emf.close();
 
         return 0;
+    }
+
+    //Update tags in database, based on search-satisfying results
+    public static int updateTags(List<eMailObject> emailsToUpdate, String tagToAdd)
+    {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
+        TypedQuery<eMailObject> tagQuery;
+
+        for (eMailObject email : emailsToUpdate)
+        {
+            email.addTag(tagToAdd);
+
+            tagQuery = em.createQuery("UPDATE eMail " +
+                    "SET eMail.addTag(" + tagToAdd + ") WHERE " +
+                    "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
+
+            if (!tagQuery.getResultList().isEmpty())
+            {
+                return 0;
+            }
+        }
+        return -1;
     }
 
     //Retrieve emails from database, dependant on query
@@ -178,7 +202,7 @@ public class SkeletonClient
     {
         //Set up connection to database
         EntityManagerFactory emf =
-                Persistence.createEntityManagerFactory("$objectdb/db/gnocchiEmailStorage.odb");
+                Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
         EntityManager em = emf.createEntityManager();
 
         TypedQuery<eMailObject> tagQuery;
@@ -201,13 +225,13 @@ public class SkeletonClient
             else if (providedQuery[counter].equalsIgnoreCase("Contains"))
             {
                 //WHERE email body contains search term
-                completeQuery = completeQuery.concat("eMail.body LIKE %" + providedQuery[counter + 1] + "% ");
+                completeQuery = completeQuery.concat("eMail.getBody() LIKE %" + providedQuery[counter + 1] + "% ");
 
                 //OR
                 completeQuery = completeQuery.concat("OR ");
 
                 //Email subject contains search term
-                completeQuery = completeQuery.concat("eMail.subject LIKE %" + providedQuery[counter + 1] + "% ");
+                completeQuery = completeQuery.concat("eMail.getSubject() LIKE %" + providedQuery[counter + 1] + "% ");
 
                 //Adds two to counter, skipping past search-term
                 counter = counter + 2;
@@ -216,23 +240,54 @@ public class SkeletonClient
             else if (providedQuery[counter].equalsIgnoreCase("Sender "))
             {
                 //WHERE email sender contains search term
-                completeQuery = completeQuery.concat("eMail.senders LIKE %" + providedQuery[counter + 1] + "% ");
+                completeQuery = completeQuery.concat("eMail.getSenders() LIKE %" + providedQuery[counter + 1] + "% ");
                 counter = counter + 2;
             }
 
             else if (providedQuery[counter].equalsIgnoreCase("Date-Match "))
             {
                 //WHERE email sent date matches query
-                completeQuery = completeQuery.concat("eMail.sentDate LIKE %" + providedQuery[counter + 1] + "% ");
+                completeQuery = completeQuery.concat("eMail.getSentDate() LIKE %" + providedQuery[counter + 1] + "% ");
                 counter = counter + 2;
             }
+
+            else if (providedQuery[counter].equalsIgnoreCase("Date-Range "))
+            {
+                //WHERE email sent date fits range of query
+                //completeQuery = completeQuery.concat("eMail.sentDate.getTime()")
+            }
+
+            else if (providedQuery[counter].equalsIgnoreCase("Recipients "))
+            {
+                //WHERE email recipients contain particular String
+                completeQuery = completeQuery.concat("eMail.getRecipients() LIKE %" + providedQuery[counter + 1] + "% ");
+                counter = counter + 2;
+            }
+
+            else if (providedQuery[counter].equalsIgnoreCase("Tag "))
+            {
+                //WHERE email is already tagged with another tag
+                completeQuery = completeQuery.concat("eMail.getTags() LIKE %" + providedQuery[counter + 1] + "% ");
+                counter = counter + 2;
+            }
+
+            else
+            {
+                //In theory, this should never be called, but I need an 'else' condition here regardless
+                counter++;
+            }
+
+            //TODO: Alter previous code to reflect the fact that SQL dates are not the same format as Java's
+            //TODO: Date-range (About 5 months ago, etc.), recipients, etc. search functions
         }
 
+        completeQuery = completeQuery + ";";
         tagQuery = em.createQuery(completeQuery, eMailObject.class);
 
         //Return results as List
-        tagQuery.setParameter("tag", tagName);
         List<eMailObject> results = tagQuery.getResultList();
+
+        updateTags(results, tagName);
 
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];

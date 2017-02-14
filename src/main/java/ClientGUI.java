@@ -33,7 +33,7 @@ public class ClientGUI
     private static int drawWindow(String[] panes, String[] sections)
     {
         //Draw frame, add information - dimensions, title, icon, etc.
-        JFrame mainWindow = new JFrame("Making Gnocchi, Version 0.1");
+        JFrame mainWindow = new JFrame("Tagging Email Client Test");
         //TODO : Add icon image for program
         //mainWindow.setIconImage(Image image);
 
