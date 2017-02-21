@@ -1,4 +1,8 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 public class ClientGUI
@@ -54,7 +58,7 @@ public class ClientGUI
 
         //Add toolbar to container
         //For each pane, we create a panel to add to the panes container
-        for (int i = 0; i < panes.length; i++) {
+        for (String pane : panes){
             JPanel tempPanel = new JPanel();
             tempPanel.setLayout(new GridLayout(0, 1));
 
@@ -63,9 +67,48 @@ public class ClientGUI
 
             //Load emails based on relevant tag, add to container -
             //Stored in panes[i]
-            //TODO: Load based on saved tags - may need to rework how search works, to account for saved and
-            //TODO: multiple tags
-            SkeletonClient.searchQuery(panes[i]);
+
+            String[] searchArray = new String[2];
+            searchArray[0] = "Tag ";
+            searchArray[1] = pane;
+
+            eMailObject[] paneQueryResults = SkeletonClient.searchQuery(searchArray, " ");
+
+            //TODO: loop through paneQueryResults, adding entries for each email, buttons to open, delete, etc.
+            //Loop through email results, adding to scrollable list of emails, each with read/tag/etc. buttons
+            for (eMailObject result : paneQueryResults)
+            {
+                JPanel resultPanel = new JPanel();
+                resultPanel.setLayout(new GridLayout(1, 0));
+
+                //TODO: Add text-preview for email
+                String emailTitle = result.getSubject().substring(0, 20);
+                String emailBody = result.getBody().substring(0, 7) + "...";
+
+                resultPanel.add(new JLabel(emailTitle));
+                resultPanel.add(new JLabel(emailBody));
+
+                //TODO: Add buttons (Read, Tag, etc.), listeners
+                JButton readButton = new JButton("Read"); //TODO: Add icon
+                readButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        //Call Read Email function from SkeletonClient
+                        //TODO
+                        SkeletonClient.readEmail(result);
+                    }
+                });
+
+                JButton tagButton = new JButton("Tag");
+                tagButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        //Call Add Tag function from GUI somewhere
+                        //TODO
+                        addTagGUI(result);
+                    }
+                });
+
+                tempPanel.add(resultPanel);
+            }
 
             panesPanel.add(tempScrollPane);
         }
@@ -73,6 +116,26 @@ public class ClientGUI
         content.add(panesPanel);
 
         return 0;
+    }
+
+    //TODO
+    //Intention : Simple function that springs up a nice little window, which you can use to add a tag to an email
+    public static void addTagGUI(eMailObject targetEmail)
+    {
+        final java.util.List<eMailObject> emailsToUpdate = new ArrayList<eMailObject>();
+        emailsToUpdate.add(targetEmail);
+
+        final JTextField input = new JTextField("", 10);
+
+        //Create text field to edit
+        //Add button to add tag to email
+        JButton updateButton = new JButton("Add Tag");
+        updateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                SkeletonClient.updateTags(emailsToUpdate, stringToAdd);
+            }
+        });
+
     }
 
     //Add method for searchbox - draw searchbox, add actionlistener for search button, load new window with results?

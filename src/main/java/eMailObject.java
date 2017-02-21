@@ -56,8 +56,8 @@ public class eMailObject {
         this.subject = subject;
     }
 
-    public String getBody() {
-        return body.toString();
+    public Object getBody() {
+        return body;
     }
 
     public void setBody(Object body) {

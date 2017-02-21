@@ -271,6 +271,13 @@ public class SkeletonClient
                 counter = counter + 2;
             }
 
+            else if (providedQuery[counter].equalsIgnoreCase("Message_ID "))
+            {
+                //WHERE email matches message ID - probably just used for behind the scenes search
+                completeQuery = completeQuery.concat("eMail.getMessage_ID()" + providedQuery[counter + 1] + "% ");
+                counter = counter + 2;
+            }
+
             else
             {
                 //In theory, this should never be called, but I need an 'else' condition here regardless
@@ -278,7 +285,6 @@ public class SkeletonClient
             }
 
             //TODO: Alter previous code to reflect the fact that SQL dates are not the same format as Java's
-            //TODO: Date-range (About 5 months ago, etc.), recipients, etc. search functions
         }
 
         completeQuery = completeQuery + ";";
@@ -287,11 +293,52 @@ public class SkeletonClient
         //Return results as List
         List<eMailObject> results = tagQuery.getResultList();
 
-        updateTags(results, tagName);
+        //Updates tags for emails, unless tag is null
+        if (!tagName.equals(" "))
+        {
+            updateTags(results, tagName);
+        }
 
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];
         results.toArray(resultsAsArray);
         return resultsAsArray;
+    }
+
+    //Update email body in database with message_ID
+    public static void retrieveBody(eMailObject email)
+    {
+        //Query for message ID, retrieve body
+        String[] query = new String[2];
+        query[0] = "Message_ID ";
+        query[1] = "" + email.getMessage_ID();
+        eMailObject[] results = searchQuery(query, " ");
+
+        Object queryResult = results[0].getBody();
+
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
+        TypedQuery<eMailObject> updateQuery;
+
+        updateQuery = em.createQuery("UPDATE eMail SET eMail.setBody(" + queryResult +
+                ") WHERE " + "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
+    }
+
+    //TFIDF - term frequency values, per email body, for easy search
+    public static void tfidf(eMailObject email)
+    {
+        //Retrieve email body
+        retrieveBody(email);
+
+        //Per document, find term frequency for every word, map
+
+        //Find overall max frequency
+
+        //Outline augmented term frequency (0.5 + 0.5 * frequency / max frequency in document)
+
+        //Work out the inverse document frequency
+        // (log (Number of Documents / Number of documents where term appears
     }
 }
