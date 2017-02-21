@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
-import java.util.List;
 import javax.swing.*;
 
 public class ClientGUI
@@ -81,12 +80,9 @@ public class ClientGUI
                 JPanel resultPanel = new JPanel();
                 resultPanel.setLayout(new GridLayout(1, 0));
 
-                //TODO: Add text-preview for email
                 String emailTitle = result.getSubject().substring(0, 20);
-                String emailBody = result.getBody().substring(0, 7) + "...";
 
                 resultPanel.add(new JLabel(emailTitle));
-                resultPanel.add(new JLabel(emailBody));
 
                 //TODO: Add buttons (Read, Tag, etc.), listeners
                 JButton readButton = new JButton("Read"); //TODO: Add icon

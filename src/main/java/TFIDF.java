@@ -1,13 +1,14 @@
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.util.*;
 
 public class TFIDF
 {
-    public void augmentedTermFrequency(String emailBody)
+    //Work out term frequency, occurences of term in each email
+    public HashMap<String, Double> augmentedTermFrequency(String emailBody)
     {
-        //Reduce email body to all lower case and alphanumeric
-        emailBody = emailBody.toLowerCase();
-        emailBody = emailBody.replaceAll("[^A-Za-z0-9]", "");
-
         //Split email body into separate words, for term frequency calculations
         String[] email = emailBody.split(" ");
 
@@ -44,5 +45,38 @@ public class TFIDF
         }
     }
 
-    public void inverseDocumentFrequency
+    public void tfidf(eMailObject email)
+    {
+        String emailBody = SkeletonClient.retrieveBody(email);
+
+        //Reduce email body to all lower case and alphanumeric
+        emailBody = emailBody.toLowerCase();
+        emailBody = emailBody.replaceAll("[^A-Za-z0-9]", "");
+
+        //TODO: Apply stopword removal to emailBody
+
+        //TODO: Apply Stemming to emailBody
+
+        //Call augmented term frequency method
+        HashMap<String, Double> tfidfs = augmentedTermFrequency(emailBody);
+
+        //Update
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+
+        for (Map.Entry<String, Double> entry : tfidfs.entrySet())
+        {
+            entry.setValue(entry.getValue() * IDFFile.idfCalculate(entry.getKey()));
+
+            TypedQuery<eMailObject> tagQuery;
+
+            tagQuery = em.createQuery("UPDATE eMail " +
+                    "SET eMail.addToMap(" + entry.getKey() + "," + entry.getValue() + ") WHERE " +
+                    "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
+        }
+
+        em.close();
+        emf.close();
+    }
 }

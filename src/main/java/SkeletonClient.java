@@ -1,5 +1,6 @@
 import javax.mail.*;
 import java.io.*;
+import javax.mail.search.MessageIDTerm;
 import javax.persistence.*;
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class SkeletonClient
     }
 
     //Allows writing to particular line in a data file
-    public static int writeFileContents(String fileName, int line, int valueToWrite)
+    public static int writeFileContents(String fileName, int line, String valueToWrite)
     {
         //Write to specific line of data text file, outlining desired value
         try {
@@ -65,7 +66,7 @@ public class SkeletonClient
             {
                 if(line == lineBeingRead)
                 {
-                    currentLine = Integer.toString(valueToWrite);
+                    currentLine = valueToWrite;
                 }
                 bw.write(currentLine, 0, currentLine.length());
 
@@ -85,7 +86,6 @@ public class SkeletonClient
 
         return -1;
     }
-
 
     /*Enables checking of emails from an IMAP server*/
     public static int retrieveEmail(String mailHost, String username, String password)
@@ -122,10 +122,27 @@ public class SkeletonClient
                 //last updated date
                 if (email.getSentDate().getTime() <= last_updated) { break; }
 
+                //Convert senders + recipients to list, prior to object storage
+                int senderCount = 0;
+                List<Address> listSenders = new ArrayList<Address>();
+                while (senderCount < email.getFrom().length)
+                {
+                    listSenders.add(email.getFrom()[senderCount]);
+                    senderCount++;
+                }
+
+                int recipientCount = 0;
+                List<Address> listRecipients = new ArrayList<Address>();
+                while (recipientCount < email.getAllRecipients().length)
+                {
+                    listRecipients.add(email.getAllRecipients()[recipientCount]);
+                    recipientCount++;
+                }
+
                 //Add to array of objects for now, prior to creating database
                 //Adds email unique identifier, and leaves current tags null for now
-                emailArray[i] = new eMailObject(email.getFrom(), email.getAllRecipients(), email.getSentDate(),
-                        email.getSubject(), email.getContent(), email.getMessageNumber(),
+                emailArray[i] = new eMailObject(listSenders, listRecipients, email.getSentDate(),
+                        email.getSubject(), null, email.getMessageNumber(),
                         null);
             }
 
@@ -305,40 +322,41 @@ public class SkeletonClient
         return resultsAsArray;
     }
 
-    //Update email body in database with message_ID
-    public static void retrieveBody(eMailObject email)
+    //Return body contents from mail server
+    public static String retrieveBody(eMailObject email, String mailHost, String username, String password)
     {
-        //Query for message ID, retrieve body
-        String[] query = new String[2];
-        query[0] = "Message_ID ";
-        query[1] = "" + email.getMessage_ID();
-        eMailObject[] results = searchQuery(query, " ");
+        try {
+            //Create mail session to poll mail server
+            Properties sessionProperties = new Properties();
+            sessionProperties.put("mail.store.protocol", "imaps");
+            Session mailSession = Session.getInstance(sessionProperties);
+            Store mailStore = mailSession.getStore();
+            mailStore.connect(mailHost, username, password);
 
-        Object queryResult = results[0].getBody();
+            /*Retrieves just data from folder inbox for now*/
+            Folder inbox = mailStore.getFolder("INBOX");
+            inbox.open(Folder.READ_ONLY);
 
+            //Search for emails that match message ID
+            MessageIDTerm searchID = new MessageIDTerm("" + email.getMessage_ID());
+
+            Message[] results = inbox.search(searchID);
+            return results[0].getContent().toString();
+        }
+        catch (Exception mailEx) {
+            mailEx.printStackTrace();}
+    }
+
+    //TODO : Look into how actually TypedQuery works
+    public static int countEmails()
+    {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
 
-        TypedQuery<eMailObject> updateQuery;
+        TypedQuery<eMailObject> countQuery;
 
-        updateQuery = em.createQuery("UPDATE eMail SET eMail.setBody(" + queryResult +
-                ") WHERE " + "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
-    }
-
-    //TFIDF - term frequency values, per email body, for easy search
-    public static void tfidf(eMailObject email)
-    {
-        //Retrieve email body
-        retrieveBody(email);
-
-        //Per document, find term frequency for every word, map
-
-        //Find overall max frequency
-
-        //Outline augmented term frequency (0.5 + 0.5 * frequency / max frequency in document)
-
-        //Work out the inverse document frequency
-        // (log (Number of Documents / Number of documents where term appears
+        countQuery = em.createQuery("SELECT COUNT(eMail) FROM eMailObject", eMailObject.class);
+        return Integer.parseInt(countQuery.getSingleResult().toString());
     }
 }
