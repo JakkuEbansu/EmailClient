@@ -1,6 +1,5 @@
 import javax.mail.*;
 import java.io.*;
-import javax.mail.search.MessageIDTerm;
 import javax.persistence.*;
 import java.util.*;
 
@@ -9,82 +8,15 @@ public class SkeletonClient
     public static void main(String [] args)
     {
         //Read from secure file - username, mailhost, password
-        String mailHost = readFileContents("secure.txt", 0);
-        String userName = readFileContents("secure.txt", 1);
-        String password = readFileContents("secure.txt", 2);
+        String mailHost = FileOperations.readFileContents("secure.txt", 0);
+        String userName = FileOperations.readFileContents("secure.txt", 1);
+        String password = FileOperations.readFileContents("secure.txt", 2);
 
         //Retrieve email stores emails in array - update to remote server later
         retrieveEmail(mailHost, userName, password);
 
         //Call GUI
         ClientGUI.setup();
-    }
-
-    //Allows reading of particular line in a data file
-    public static String readFileContents(String fileName, int dataLine)
-    {
-        try {
-            //Set filebuffer to read desired file filename
-            FileReader fr = new FileReader(fileName);
-            BufferedReader bf = new BufferedReader(fr);
-
-            int currentLine = 0;
-
-            //Loop forward to desired line in file
-            while (currentLine < dataLine) {
-                currentLine++;
-                bf.readLine();
-            }
-
-            return bf.readLine();
-            //Returns value of outlined line
-        }
-        catch (Exception ioException){
-            ioException.printStackTrace();
-        }
-
-        return "-1";
-    }
-
-    //Allows writing to particular line in a data file
-    public static int writeFileContents(String fileName, int line, String valueToWrite)
-    {
-        //Write to specific line of data text file, outlining desired value
-        try {
-            FileWriter fw = new FileWriter("tempWrite.txt");
-            BufferedWriter bw = new BufferedWriter(fw);
-
-            FileReader fr = new FileReader(fileName);
-            BufferedReader br = new BufferedReader(fr);
-
-            String currentLine;
-            int lineBeingRead = 0;
-
-            //Read line, up until desired line and afterwards, copying and pasting to new temp file
-            //When desired line to change is found, new data is changed for old
-            while ((currentLine = br.readLine()) != null)
-            {
-                if(line == lineBeingRead)
-                {
-                    currentLine = valueToWrite;
-                }
-                bw.write(currentLine, 0, currentLine.length());
-
-                lineBeingRead++;
-            }
-
-            File desiredFile = new File(fileName);
-            desiredFile.delete();
-            new File("tempWrite.txt").renameTo(desiredFile);
-
-            return 0;
-        }
-
-        catch (Exception ioException){
-            ioException.printStackTrace();
-        }
-
-        return -1;
     }
 
     /*Enables checking of emails from an IMAP server*/
@@ -101,7 +33,6 @@ public class SkeletonClient
             Properties sessionProperties = new Properties();
 
             sessionProperties.put("mail.store.protocol", "imaps");
-
             Session mailSession = Session.getInstance(sessionProperties);
             Store mailStore = mailSession.getStore();
             mailStore.connect(mailHost, username, password);
@@ -141,9 +72,8 @@ public class SkeletonClient
 
                 //Add to array of objects for now, prior to creating database
                 //Adds email unique identifier, and leaves current tags null for now
-                emailArray[i] = new eMailObject(listSenders, listRecipients, email.getSentDate(),
-                        email.getSubject(), null, email.getMessageNumber(),
-                        null);
+                emailArray[i] = new eMailObject(listSenders, listRecipients, email.getSentDate(), email.getReceivedDate(),
+                        email.getSubject(), email.getMessageNumber());
             }
 
             storeToDatabase(emailArray);
@@ -157,7 +87,7 @@ public class SkeletonClient
         //Write to file, updating last updated date/time
         //Use getTime from Date, aka amount of milliseconds since 1970 - cast to int
         //Write to data file, on line UDL
-        writeFileContents("data.txt", updated_date_line, (int) currentDate.getTime());
+        writeFileContents("data.txt", updated_date_line, "" + currentDate.getTime());
 
         return 0;
     }
@@ -223,9 +153,7 @@ public class SkeletonClient
         EntityManager em = emf.createEntityManager();
 
         TypedQuery<eMailObject> tagQuery;
-
         int counter = 0;
-
         String completeQuery = "SELECT eMail FROM eMailObject email WHERE ";
 
         while (counter < providedQuery.length)
@@ -242,7 +170,7 @@ public class SkeletonClient
             else if (providedQuery[counter].equalsIgnoreCase("Contains"))
             {
                 //WHERE email body contains search term
-                completeQuery = completeQuery.concat("eMail.getBody() LIKE %" + providedQuery[counter + 1] + "% ");
+                completeQuery = completeQuery.concat("eMail.getTfidfMap() LIKE %" + providedQuery[counter + 1] + "% ");
 
                 //OR
                 completeQuery = completeQuery.concat("OR ");
@@ -299,9 +227,7 @@ public class SkeletonClient
             {
                 //In theory, this should never be called, but I need an 'else' condition here regardless
                 counter++;
-            }
-
-            //TODO: Alter previous code to reflect the fact that SQL dates are not the same format as Java's
+            }//TODO: Alter previous code to reflect the fact that SQL dates are not the same format as Java's
         }
 
         completeQuery = completeQuery + ";";
@@ -311,10 +237,7 @@ public class SkeletonClient
         List<eMailObject> results = tagQuery.getResultList();
 
         //Updates tags for emails, unless tag is null
-        if (!tagName.equals(" "))
-        {
-            updateTags(results, tagName);
-        }
+        if (!tagName.equals(" ")) {   updateTags(results, tagName);   }
 
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];
@@ -347,7 +270,7 @@ public class SkeletonClient
             mailEx.printStackTrace();}
     }
 
-    //TODO : Look into how actually TypedQuery works
+    //TODO : Look into how actually TypedQuery works, perhaps change to parameter-based
     public static int countEmails()
     {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
@@ -359,4 +282,6 @@ public class SkeletonClient
         countQuery = em.createQuery("SELECT COUNT(eMail) FROM eMailObject", eMailObject.class);
         return Integer.parseInt(countQuery.getSingleResult().toString());
     }
+
+    //TODO: Need to implement TFIDF in email adding
 }

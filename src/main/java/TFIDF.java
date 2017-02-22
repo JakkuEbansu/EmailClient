@@ -1,7 +1,4 @@
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.*;
 
 public class TFIDF
@@ -19,7 +16,7 @@ public class TFIDF
 
         //For each word in the email, add to the map or add
         for (String word : email)
-        {
+        {//If in the map, update max frequency and increment value in the map, otherwise just add the new term
             if (termFrequencies.containsKey(word))
             {
                 //Update term frequency
@@ -27,15 +24,10 @@ public class TFIDF
                 termFrequencies.put(word, newFrequency);
 
                 //Update maximum frequency
-                if (newFrequency > maxFrequency)
-                {
-                    maxFrequency = newFrequency;
-                }
+                if (newFrequency > maxFrequency) {   maxFrequency = newFrequency; }
             }
             else
-            {
-                termFrequencies.put(word, 1.0);
-            }
+            {   termFrequencies.put(word, 1.0); }
         }
 
         //Update term frequency to augmented term frequency, related to maximum frequency
@@ -47,7 +39,7 @@ public class TFIDF
 
     public void tfidf(eMailObject email)
     {
-        String emailBody = SkeletonClient.retrieveBody(email);
+        String emailBody = SkeletonClient.retrieveBody(email, mailhost, username, password);
 
         //Reduce email body to all lower case and alphanumeric
         emailBody = emailBody.toLowerCase();
@@ -60,6 +52,11 @@ public class TFIDF
         //Call augmented term frequency method
         HashMap<String, Double> tfidfs = augmentedTermFrequency(emailBody);
 
+        //Add emailBody contents to IDF statistics
+        HashMap<String, Integer> idfMap = new HashMap<String, Integer>();
+        IDFFile idfStorage = new IDFFile(idfMap);
+        idfStorage.updateIDF(emailBody.split(" "));
+
         //Update
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/emailStorage.odb");
         EntityManager em = emf.createEntityManager();
@@ -67,11 +64,11 @@ public class TFIDF
 
         for (Map.Entry<String, Double> entry : tfidfs.entrySet())
         {
-            entry.setValue(entry.getValue() * IDFFile.idfCalculate(entry.getKey()));
+            //Calculate TFIDF for each value in the map
+            entry.setValue(entry.getValue() * idfStorage.idfCalculate(entry.getKey()));
 
-            TypedQuery<eMailObject> tagQuery;
-
-            tagQuery = em.createQuery("UPDATE eMail " +
+            //Create query, to update database - add key, value to TFIDF hashmap
+            TypedQuery<eMailObject>tagQuery = em.createQuery("UPDATE eMail " +
                     "SET eMail.addToMap(" + entry.getKey() + "," + entry.getValue() + ") WHERE " +
                     "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
         }

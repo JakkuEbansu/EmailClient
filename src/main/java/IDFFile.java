@@ -18,10 +18,8 @@ public class IDFFile
         //TODO : May need to add stopword/alphanumeric/etc. features, throw into their own method :3
         //Loop through email to find only unique terms
         for (String term : emailBody)
-        {
-            if (!uniqueTerms.contains(term))
-            { uniqueTerms.add(term); }
-        }
+        {  if (!uniqueTerms.contains(term))
+            { uniqueTerms.add(term); }  }
 
         //Loop through unique terms, adding to map
         for (String term : uniqueTerms)
@@ -37,7 +35,7 @@ public class IDFFile
         //Write this to file
         for (Map.Entry<String, Integer> entry : idfMap.entrySet())
         {
-            SkeletonClient.writeFileContents("idfMapContents.txt", lineCounter, entry.getKey() + " " + entry.getValue());
+            FileOperations.writeFileContents("idfMapContents.txt", lineCounter, entry.getKey() + " " + entry.getValue());
             lineCounter++;
         }
     }

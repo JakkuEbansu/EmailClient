@@ -9,8 +9,8 @@ public class ClientGUI
     public static void setup()
     {
         //Read from GUI data for desired number of panes, and pane content (desired tags to be displayed)
-        int desiredNoPanes = Integer.parseInt(SkeletonClient.readFileContents("panesData.txt", 0));
-        int desiredNoSections = Integer.parseInt(SkeletonClient.readFileContents("sectionsData.txt", 0));
+        int desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
+        int desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
 
         String[] panes = new String[desiredNoPanes];
         String[] sections = new String[desiredNoSections];
@@ -20,13 +20,13 @@ public class ClientGUI
         for(int i = 1; i <= desiredNoPanes; i++)
         {
             //Read desired tag(s) from panes data file
-            panes[i] = SkeletonClient.readFileContents("panesData.txt", i);
+            panes[i] = FileOperations.readFileContents("panesData.txt", i);
         }
 
         for(int i = 1; i <= desiredNoSections; i++)
         {
             //Read desired section(s) from panes data file
-            sections[i] = SkeletonClient.readFileContents("sectionsData.txt", i);
+            sections[i] = FileOperations.readFileContents("sectionsData.txt", i);
         }
 
         //Initialise - draw window, basic components
@@ -41,8 +41,8 @@ public class ClientGUI
         //mainWindow.setIconImage(Image image);
 
         //Define the dimensions of the full window
-        int window_width = Integer.parseInt(SkeletonClient.readFileContents("windowData.txt", 0));
-        int window_height = Integer.parseInt(SkeletonClient.readFileContents("windowData.txt", 1));
+        int window_width = Integer.parseInt(FileOperations.readFileContents("windowData.txt", 0));
+        int window_height = Integer.parseInt(FileOperations.readFileContents("windowData.txt", 1));
         mainWindow.setSize(window_width, window_height);
 
         //Get content pane (Container for other objects)
