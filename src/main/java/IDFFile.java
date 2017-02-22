@@ -15,7 +15,6 @@ public class IDFFile
     {
         Set<String> uniqueTerms = new HashSet<String>();
 
-        //TODO : May need to add stopword/alphanumeric/etc. features, throw into their own method :3
         //Loop through email to find only unique terms
         for (String term : emailBody)
         {  if (!uniqueTerms.contains(term))

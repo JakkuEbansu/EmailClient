@@ -3,6 +3,8 @@ import java.util.*;
 
 public class TFIDF
 {
+    public TFIDF(){}
+
     //Work out term frequency, occurences of term in each email
     public HashMap<String, Double> augmentedTermFrequency(String emailBody)
     {
@@ -35,18 +37,19 @@ public class TFIDF
         {
             entry.setValue(0.5 + 0.5 * ( entry.getValue() / maxFrequency) );
         }
+
+        return termFrequencies;
     }
 
     public void tfidf(eMailObject email)
     {
-        String emailBody = SkeletonClient.retrieveBody(email, mailhost, username, password);
+        String emailBody = SkeletonClient.retrieveBody(email);
 
         //Reduce email body to all lower case and alphanumeric
         emailBody = emailBody.toLowerCase();
         emailBody = emailBody.replaceAll("[^A-Za-z0-9]", "");
 
         //TODO: Apply stopword removal to emailBody
-
         //TODO: Apply Stemming to emailBody
 
         //Call augmented term frequency method

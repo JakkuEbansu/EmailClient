@@ -6,12 +6,17 @@ import javax.swing.*;
 
 public class ClientGUI
 {
-    public static void setup()
-    {
-        //Read from GUI data for desired number of panes, and pane content (desired tags to be displayed)
-        int desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
-        int desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
+    private int desiredNoPanes;
+    private int desiredNoSections;
 
+    public ClientGUI(){
+        desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
+        desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
+        setup();
+    }
+
+    public void setup()
+    {
         String[] panes = new String[desiredNoPanes];
         String[] sections = new String[desiredNoSections];
 
@@ -75,12 +80,12 @@ public class ClientGUI
 
             //TODO: loop through paneQueryResults, adding entries for each email, buttons to open, delete, etc.
             //Loop through email results, adding to scrollable list of emails, each with read/tag/etc. buttons
-            for (eMailObject result : paneQueryResults)
+            for (final eMailObject result : paneQueryResults)
             {
                 JPanel resultPanel = new JPanel();
                 resultPanel.setLayout(new GridLayout(1, 0));
 
-                String emailTitle = result.getSubject().substring(0, 20);
+                String emailTitle = result.getSubject().substring(0, 20) + "... ";
 
                 resultPanel.add(new JLabel(emailTitle));
 
@@ -89,19 +94,17 @@ public class ClientGUI
                 readButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         //Call Read Email function from SkeletonClient
-                        //TODO
-                        SkeletonClient.readEmail(result);
+                        //TODO Display Email Body Window
+                        readEmail(result);
                     }
                 });
+                resultPanel.add(readButton);
 
                 JButton tagButton = new JButton("Tag");
                 tagButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        //Call Add Tag function from GUI somewhere
-                        //TODO
-                        addTagGUI(result);
-                    }
+                    public void actionPerformed(ActionEvent actionEvent) { addTagGUI(result); }
                 });
+                resultPanel.add(tagButton);
 
                 tempPanel.add(resultPanel);
             }
@@ -127,11 +130,14 @@ public class ClientGUI
         //Add button to add tag to email
         JButton updateButton = new JButton("Add Tag");
         updateButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                SkeletonClient.updateTags(emailsToUpdate, stringToAdd);
-            }
+            public void actionPerformed(ActionEvent actionEvent) { SkeletonClient.updateTags(emailsToUpdate, input.toString()); }
         });
 
+    }
+
+    public static void readEmail(eMailObject targetEmail)
+    {
+        final JTextArea email = new JTextArea(SkeletonClient.retrieveBody(targetEmail));
     }
 
     //Add method for searchbox - draw searchbox, add actionlistener for search button, load new window with results?

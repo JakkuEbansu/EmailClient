@@ -1,5 +1,5 @@
 import javax.mail.*;
-import java.io.*;
+import javax.mail.search.MessageIDTerm;
 import javax.persistence.*;
 import java.util.*;
 
@@ -8,12 +8,10 @@ public class SkeletonClient
     public static void main(String [] args)
     {
         //Read from secure file - username, mailhost, password
-        String mailHost = FileOperations.readFileContents("secure.txt", 0);
-        String userName = FileOperations.readFileContents("secure.txt", 1);
-        String password = FileOperations.readFileContents("secure.txt", 2);
 
         //Retrieve email stores emails in array - update to remote server later
-        retrieveEmail(mailHost, userName, password);
+        retrieveEmail(FileOperations.retrieveCredentials("mailHost"), FileOperations.retrieveCredentials("userName"),
+                FileOperations.retrieveCredentials("password"));
 
         //Call GUI
         ClientGUI.setup();
@@ -28,7 +26,7 @@ public class SkeletonClient
         {
             //ReadFileValue to find last updated date/time
             //Only read in emails since last updated date
-            int last_updated = Integer.parseInt(readFileContents("data.txt", updated_date_line));
+            int last_updated = Integer.parseInt(FileOperations.readFileContents("data.txt", updated_date_line));
 
             Properties sessionProperties = new Properties();
 
@@ -87,7 +85,7 @@ public class SkeletonClient
         //Write to file, updating last updated date/time
         //Use getTime from Date, aka amount of milliseconds since 1970 - cast to int
         //Write to data file, on line UDL
-        writeFileContents("data.txt", updated_date_line, "" + currentDate.getTime());
+        FileOperations.writeFileContents("data.txt", updated_date_line, "" + currentDate.getTime());
 
         return 0;
     }
@@ -196,11 +194,12 @@ public class SkeletonClient
                 counter = counter + 2;
             }
 
-            else if (providedQuery[counter].equalsIgnoreCase("Date-Range "))
-            {
+            //TODO: Alter Date coding, attempt to match Date in SQL vs. Java Dates
+            //else if (providedQuery[counter].equalsIgnoreCase("Date-Range "))
+            //{
                 //WHERE email sent date fits range of query
                 //completeQuery = completeQuery.concat("eMail.sentDate.getTime()")
-            }
+            //}
 
             else if (providedQuery[counter].equalsIgnoreCase("Recipients "))
             {
@@ -227,7 +226,7 @@ public class SkeletonClient
             {
                 //In theory, this should never be called, but I need an 'else' condition here regardless
                 counter++;
-            }//TODO: Alter previous code to reflect the fact that SQL dates are not the same format as Java's
+            }
         }
 
         completeQuery = completeQuery + ";";
@@ -246,9 +245,13 @@ public class SkeletonClient
     }
 
     //Return body contents from mail server
-    public static String retrieveBody(eMailObject email, String mailHost, String username, String password)
+    public static String retrieveBody(eMailObject email)
     {
         try {
+            String mailHost = FileOperations.retrieveCredentials("mailHost");
+            String username = FileOperations.retrieveCredentials("userName");
+            String password = FileOperations.retrieveCredentials("password");
+
             //Create mail session to poll mail server
             Properties sessionProperties = new Properties();
             sessionProperties.put("mail.store.protocol", "imaps");
@@ -268,6 +271,8 @@ public class SkeletonClient
         }
         catch (Exception mailEx) {
             mailEx.printStackTrace();}
+
+        return "";
     }
 
     //TODO : Look into how actually TypedQuery works, perhaps change to parameter-based
@@ -281,6 +286,13 @@ public class SkeletonClient
 
         countQuery = em.createQuery("SELECT COUNT(eMail) FROM eMailObject", eMailObject.class);
         return Integer.parseInt(countQuery.getSingleResult().toString());
+    }
+
+    //Creates new instance of TFIDF calculation, adds TFIDF information to the database
+    public static void addTFIDF(eMailObject email)
+    {
+        TFIDF tfidfCalculator = new TFIDF();
+        tfidfCalculator.tfidf(email);
     }
 
     //TODO: Need to implement TFIDF in email adding
