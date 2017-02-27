@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="formGUI">
+  <grid id="27dc6" binding="wholeWindow" layout-manager="GridBagLayout">
+    <constraints>
+      <xy x="20" y="20" width="1991" height="931"/>
+    </constraints>
+    <properties>
+      <enabled value="true"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <toolbar id="71a00" binding="toolBar">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="20"/>
+          </grid>
+          <gridbag weightx="0.0" weighty="0.0" ipadx="1000"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="3748a" class="javax.swing.JButton" binding="newButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="New"/>
+              <verticalAlignment value="1"/>
+            </properties>
+          </component>
+          <component id="f2712" class="javax.swing.JButton" binding="syncButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Sync"/>
+              <verticalAlignment value="1"/>
+            </properties>
+          </component>
+          <grid id="b93c2" binding="searchBoxPanel" layout-manager="GridBagLayout">
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="1d99a" class="javax.swing.JTextArea" binding="searchBox">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="50"/>
+                  </grid>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties/>
+              </component>
+              <grid id="bf691" binding="searchBoxButtons" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="eca2a" class="javax.swing.JButton" binding="contains">
+                    <constraints/>
+                    <properties>
+                      <text value="Contains()"/>
+                    </properties>
+                  </component>
+                  <component id="3361" class="javax.swing.JButton" binding="sender">
+                    <constraints/>
+                    <properties>
+                      <text value="Sender()"/>
+                    </properties>
+                  </component>
+                  <component id="f4557" class="javax.swing.JButton" binding="dateMatch">
+                    <constraints/>
+                    <properties>
+                      <text value="DateMatch()"/>
+                    </properties>
+                  </component>
+                  <component id="4b249" class="javax.swing.JButton" binding="recipients">
+                    <constraints/>
+                    <properties>
+                      <text value="Recipients()"/>
+                    </properties>
+                  </component>
+                  <component id="96f72" class="javax.swing.JButton" binding="senders">
+                    <constraints/>
+                    <properties>
+                      <text value="Senders()"/>
+                    </properties>
+                  </component>
+                  <component id="1557f" class="javax.swing.JButton" binding="tag">
+                    <constraints/>
+                    <properties>
+                      <text value="Tag()"/>
+                    </properties>
+                  </component>
+                  <component id="4d15e" class="javax.swing.JButton" binding="sendQueryButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="Send Query"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <component id="74919" class="javax.swing.JTextField" binding="searchTerm">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </toolbar>
+      <tabbedpane id="aaf4f" binding="panesPanel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
+          </grid>
+          <gridbag weightx="0.0" weighty="0.0"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <scrollpane id="4e9e5" binding="scrollablePane">
+            <constraints>
+              <tabbedpane title="Untitled"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="11b23" binding="singleEmailPane" layout-manager="FlowLayout" hgap="200" vgap="0" flow-align="0">
+                <constraints/>
+                <properties/>
+                <border type="bevel-raised">
+                  <font/>
+                  <title-color color="-4473925"/>
+                </border>
+                <children>
+                  <component id="b749" class="javax.swing.JLabel" binding="timeSent">
+                    <constraints/>
+                    <properties>
+                      <text value="&quot;Time Sent&quot;"/>
+                    </properties>
+                  </component>
+                  <component id="1aa3b" class="javax.swing.JLabel" binding="emailHeader">
+                    <constraints/>
+                    <properties>
+                      <text value="&quot;Generic Email Header&quot;"/>
+                    </properties>
+                  </component>
+                  <component id="500b1" class="javax.swing.JLabel" binding="senderLabel">
+                    <constraints/>
+                    <properties>
+                      <text value="&quot;Generic Sender&quot;"/>
+                    </properties>
+                  </component>
+                  <grid id="9e8ab" layout-manager="FlowLayout" hgap="5" vgap="0" flow-align="1">
+                    <constraints/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="9533" class="javax.swing.JButton" binding="readButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Read"/>
+                        </properties>
+                      </component>
+                      <component id="989f7" class="javax.swing.JButton" binding="tagButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Tag"/>
+                        </properties>
+                      </component>
+                      <component id="e9669" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <text value="Delete"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+            </children>
+          </scrollpane>
+        </children>
+      </tabbedpane>
+    </children>
+  </grid>
+</form>
