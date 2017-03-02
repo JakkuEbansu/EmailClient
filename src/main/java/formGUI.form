@@ -122,7 +122,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <scrollpane id="4e9e5" binding="scrollablePane">
+          <scrollpane id="4e9e5" binding="tagPane">
             <constraints>
               <tabbedpane title="Untitled"/>
             </constraints>

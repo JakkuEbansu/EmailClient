@@ -41,6 +41,7 @@ public class TFIDF
         return termFrequencies;
     }
 
+    //Work out TFIDF, update map in database
     public void tfidf(eMailObject email)
     {
         String emailBody = SkeletonClient.retrieveBody(email);

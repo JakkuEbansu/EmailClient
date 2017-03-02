@@ -71,31 +71,38 @@ public class FileOperations
     }
 
     //Easy way to retrieve credentials and allow future unsalting
-    public static String retrieveCredentials(String mode)
+    public static String retrieveCredentials(String mode, int serverNumber)
     {
         if (mode.equals("mailHost")) {
-            return readFileContents("secure.txt", 1);
+            return readFileContents("secure" + serverNumber + ".txt", 1);
         }
         else if (mode.equals("userName")) {
-            return readFileContents("secure.txt", 2);
+            return readFileContents("secure" + serverNumber + ".txt", 2);
         }
         else if (mode.equals("password")) {
-            return readFileContents("secure.txt", 3);
+            return readFileContents("secure" + serverNumber + ".txt", 3);
+        }
+        else if (mode.equals("updatedDate"))    {
+            return readFileContents("secure" + serverNumber + ".txt", 4);
         }
         return "";
     }
 
+    //TODO: Salt!
     //Easy way to store credentials and eventually salt
-    public static void storeCredentials(String mode, String toStore)
+    public static void storeCredentials(String mode, String toStore, int serverNumber)
     {
         if (mode.equals("mailHost")) {
-            writeFileContents("secure.txt", 1, toStore);
+            writeFileContents("secure" + serverNumber + ".txt", 1, toStore);
         }
         else if (mode.equals("userName")) {
-            writeFileContents("secure.txt", 2, toStore);
+            writeFileContents("secure" + serverNumber + ".txt", 2, toStore);
         }
         else if (mode.equals("password")) {
-            writeFileContents("secure.txt", 3, toStore);
+            writeFileContents("secure" + serverNumber + ".txt", 3, toStore);
+        }
+        else if (mode.equals("updatedDate")) {
+            writeFileContents("secure" + serverNumber + ".txt", 4, toStore);
         }
     }
 }
