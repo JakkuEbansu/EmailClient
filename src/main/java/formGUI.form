@@ -61,12 +61,6 @@
                       <text value="Contains()"/>
                     </properties>
                   </component>
-                  <component id="3361" class="javax.swing.JButton" binding="sender">
-                    <constraints/>
-                    <properties>
-                      <text value="Sender()"/>
-                    </properties>
-                  </component>
                   <component id="f4557" class="javax.swing.JButton" binding="dateMatch">
                     <constraints/>
                     <properties>
@@ -112,7 +106,7 @@
           </grid>
         </children>
       </toolbar>
-      <tabbedpane id="aaf4f" binding="panesPanel">
+      <tabbedpane id="aaf4f" binding="sectionsPanel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <preferred-size width="200" height="200"/>
@@ -122,68 +116,84 @@
         <properties/>
         <border type="none"/>
         <children>
-          <scrollpane id="4e9e5" binding="tagPane">
+          <grid id="c29c0" binding="multiTagPane" layout-manager="GridBagLayout">
             <constraints>
               <tabbedpane title="Untitled"/>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="11b23" binding="singleEmailPane" layout-manager="FlowLayout" hgap="200" vgap="0" flow-align="0">
-                <constraints/>
+              <scrollpane id="4e9e5" binding="tagPane">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
                 <properties/>
-                <border type="bevel-raised">
-                  <font/>
-                  <title-color color="-4473925"/>
-                </border>
+                <border type="none"/>
                 <children>
-                  <component id="b749" class="javax.swing.JLabel" binding="timeSent">
-                    <constraints/>
-                    <properties>
-                      <text value="&quot;Time Sent&quot;"/>
-                    </properties>
-                  </component>
-                  <component id="1aa3b" class="javax.swing.JLabel" binding="emailHeader">
-                    <constraints/>
-                    <properties>
-                      <text value="&quot;Generic Email Header&quot;"/>
-                    </properties>
-                  </component>
-                  <component id="500b1" class="javax.swing.JLabel" binding="senderLabel">
-                    <constraints/>
-                    <properties>
-                      <text value="&quot;Generic Sender&quot;"/>
-                    </properties>
-                  </component>
-                  <grid id="9e8ab" layout-manager="FlowLayout" hgap="5" vgap="0" flow-align="1">
+                  <grid id="11b23" binding="singleEmailPane" layout-manager="FlowLayout" hgap="200" vgap="0" flow-align="0">
                     <constraints/>
                     <properties/>
-                    <border type="none"/>
+                    <border type="bevel-raised">
+                      <font/>
+                      <title-color color="-4473925"/>
+                    </border>
                     <children>
-                      <component id="9533" class="javax.swing.JButton" binding="readButton" default-binding="true">
+                      <component id="b749" class="javax.swing.JLabel" binding="timeSent">
                         <constraints/>
                         <properties>
-                          <text value="Read"/>
+                          <text value="&quot;Time Sent&quot;"/>
                         </properties>
                       </component>
-                      <component id="989f7" class="javax.swing.JButton" binding="tagButton" default-binding="true">
+                      <component id="1aa3b" class="javax.swing.JLabel" binding="emailHeader">
                         <constraints/>
                         <properties>
-                          <text value="Tag"/>
+                          <text value="&quot;Generic Email Header&quot;"/>
                         </properties>
                       </component>
-                      <component id="e9669" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
+                      <component id="500b1" class="javax.swing.JLabel" binding="senderLabel">
                         <constraints/>
                         <properties>
-                          <text value="Delete"/>
+                          <text value="&quot;Generic Sender&quot;"/>
                         </properties>
                       </component>
+                      <component id="ff08a" class="javax.swing.JLabel" binding="tagLabel">
+                        <constraints/>
+                        <properties>
+                          <text value="&quot;No Tags Applied&quot;"/>
+                        </properties>
+                      </component>
+                      <grid id="9e8ab" binding="singleEmailButtons" layout-manager="FlowLayout" hgap="5" vgap="0" flow-align="1">
+                        <constraints/>
+                        <properties/>
+                        <border type="none"/>
+                        <children>
+                          <component id="9533" class="javax.swing.JButton" binding="readButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <text value="Read"/>
+                            </properties>
+                          </component>
+                          <component id="989f7" class="javax.swing.JButton" binding="tagButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <text value="Tag"/>
+                            </properties>
+                          </component>
+                          <component id="e9669" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
+                            <constraints/>
+                            <properties>
+                              <text value="Delete"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
                     </children>
                   </grid>
                 </children>
-              </grid>
+              </scrollpane>
             </children>
-          </scrollpane>
+          </grid>
         </children>
       </tabbedpane>
     </children>

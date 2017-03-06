@@ -171,10 +171,10 @@ public class SkeletonClient
         int counter = 0;
 
         String completeQuery;
+        String order = "";
 
         if (providedQuery[0].equals(""))
         {
-            //TODO: I'm not confident this works...
             completeQuery = "SELECT eMail FROM eMailObject";
         }
         else {
@@ -190,38 +190,42 @@ public class SkeletonClient
 
                 //Contains - check if email contains the search term
                 else if (providedQuery[counter].equalsIgnoreCase("Contains")) {
-                    //TODO: Implement weighting of the queries
+
                     //WHERE email body contains search term
-                    completeQuery = completeQuery.concat("eMail.getTfidfMap().get(" + providedQuery[counter + 1] + ") ");
+                    completeQuery = completeQuery.concat("eMail.getTfidfMap().get(" + providedQuery[counter + 1] + ") IS NOT NULL ");
 
                     //OR
                     completeQuery = completeQuery.concat("OR ");
 
                     //Email subject contains search term
-                    completeQuery = completeQuery.concat("eMail.getSubject() LIKE %" + providedQuery[counter + 1] + "% ");
+                    completeQuery = completeQuery.concat("eMail.getSubject() LIKE '%" + providedQuery[counter + 1] + "%' ");
+
+                    //Organise query by TFIDF values - orders may stack, if more than one is applied
+                    if (order.equals("")) {
+                        order = "ORDER BY eMail.getTfidfMap().get(" + providedQuery[counter + 1] + ") ";
+                    }
+                    else {
+                        order = order.concat(", eMail.getTfidfMap().get(" + providedQuery[counter + 1] + ") ");
+                    }
 
                     //Adds two to counter, skipping past search-term
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Sender ")) {
                     //WHERE email sender contains search term
-                    completeQuery = completeQuery.concat("eMail.getSenders() LIKE %" + providedQuery[counter + 1] + "% ");
+                    completeQuery = completeQuery.concat("eMail.getSenders() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Sent-Date ")) {
                     //WHERE email sent date fits query's
-                    DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-
-                    //TODO: Handle exception
-                    Date queryDate = df.parse(providedQuery[counter + 1]);
-                    completeQuery = completeQuery.concat("eMail.sentDate = " + queryDate + " ");
+                    completeQuery = completeQuery.concat("eMail.sentDate.toString() = '" + providedQuery[counter + 1] + "' ");
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Received-Date ")) {
                     //WHERE email received date fits query's
-                    DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-
-                    //TODO: Handle exception here, too
-                    Date queryDate = df.parse(providedQuery[counter + 1]);
-                    completeQuery = completeQuery.concat("eMail.receivedDate = " + queryDate + " ");
+                    completeQuery = completeQuery.concat("eMail.receivedDate.toString() = '" + providedQuery[counter + 1] + "' ");
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Date-Range ")) {
                     //WHERE email is within a range of two dates
                     DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
@@ -235,19 +239,16 @@ public class SkeletonClient
                     counter = counter + 3;
                 } else if (providedQuery[counter].equalsIgnoreCase("Recipients ")) {
                     //WHERE email recipients contain particular String
-                    completeQuery = completeQuery.concat("eMail.getRecipients() LIKE %" + providedQuery[counter + 1] + "% ");
+                    completeQuery = completeQuery.concat("eMail.getRecipients() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
                 } else if (providedQuery[counter].equalsIgnoreCase("Tag ")) {
                     //WHERE email is already tagged with another tag
-                    completeQuery = completeQuery.concat("eMail.getTags() LIKE %" + providedQuery[counter + 1] + "% ");
+                    completeQuery = completeQuery.concat("eMail.getTags() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
                 } else if (providedQuery[counter].equalsIgnoreCase("Message_ID ")) {
                     //WHERE email matches message ID - probably just used for behind the scenes search
-                    completeQuery = completeQuery.concat("eMail.getMessage_ID()" + providedQuery[counter + 1] + "% ");
+                    completeQuery = completeQuery.concat("eMail.getMessage_ID() = " + providedQuery[counter + 1] + " ");
                     counter = counter + 2;
-                } else {
-                    //In theory, this should never be called, but I need an 'else' condition here regardless
-                    counter++;
                 }
             }
         }
@@ -316,6 +317,4 @@ public class SkeletonClient
         TFIDF tfidfCalculator = new TFIDF();
         tfidfCalculator.tfidf(email);
     }
-
-    //TODO: Threading
 }

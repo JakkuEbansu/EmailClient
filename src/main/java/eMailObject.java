@@ -14,6 +14,7 @@ public class eMailObject {
     private HashMap<String, Double> tfidfMap; //For searching, instead of storing body
     private boolean hasMap; //Whether the email has already had a hashmap assigned, or not
     private int mailServer; //For identification of the email's associated mailserver/account
+    private String firstLine; //Storage of first line of the email //TODO
     //Potential future additions to object - reference, tags, etc.
 
     public eMailObject(List<Address> senders, List<Address> recipients,
