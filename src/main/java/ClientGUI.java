@@ -13,8 +13,10 @@ public class ClientGUI
     private int desiredNoSections;
 
     public ClientGUI(){
-        desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
-        desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
+        //desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
+        desiredNoPanes = 2;
+        //desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
+        desiredNoSections = 1;
         setup();
     }
 
@@ -26,20 +28,22 @@ public class ClientGUI
 
         //Read line by line into the data files - for each line, the corresponding pane stores its' associated tag
         //Or section-label
-        for(int i = 1; i <= desiredNoPanes; i++)
+        for(int i = 0; i < desiredNoPanes; i++)
         {
             //Read desired tag(s) from panes data file
-            panes[i] = FileOperations.readFileContents("panesData.txt", i);
+            //panes[i] = FileOperations.readFileContents("panesData.txt", i + 1);
+            panes[i] = "Pane";
         }
 
-        for(int i = 1; i <= desiredNoSections; i++)
+        for(int i = 0; i < desiredNoSections; i++)
         {
             //Read desired section(s) from panes data file
-            sections[i] = FileOperations.readFileContents("sectionsData.txt", i);
+            //sections[i] = FileOperations.readFileContents("sectionsData.txt", i + 1);
+            sections[i] = "Section";
         }
 
         //Initialise - draw window, basic components
-        drawWindow(panes, sections);
+        formGUI.main(panes, sections);
     }
 
     //Intention : Simple function that springs up a nice little window, which you can use to add a tag to an email
@@ -145,24 +149,22 @@ public class ClientGUI
 
         JPanel mailServerButtonPanel = new JPanel();
 
-        final String userName = "";
-        final String mailHost = "";
-        int serverNumber;
+        int currentServer = 0;
 
         for (int i = 0; i <= numberOfServers; i++)
         {
             JButton mailServerButton = new JButton(FileOperations.retrieveCredentials("userName", i) + ", " +
                     FileOperations.retrieveCredentials("mailHost", i));
 
-            final int currentServer = i;
+            currentServer = i;
 
-            mailServerButton.addActionListener(new ActionListener() {
+            /*mailServerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent)
                 {
                     userName = FileOperations.retrieveCredentials("userName", currentServer);
                     mailHost = FileOperations.retrieveCredentials("mailHost", currentServer);
                 }
-            });
+            });*/
 
             mailServerButtonPanel.add(mailServerButton);
         }
@@ -177,12 +179,7 @@ public class ClientGUI
             {
                 JLabel alertLabel;
 
-                if (userName.equals(""))
-                {
-                    alertLabel = new JLabel("Assign Email Host/username!");
-                    writeEmailContainer.add(alertLabel);
-                }
-                else if (desiredTitle.equals(""))
+                if (desiredTitle.equals(""))
                 {
                     alertLabel = new JLabel("Add Email subject!");
                     writeEmailContainer.add(alertLabel);
@@ -200,7 +197,7 @@ public class ClientGUI
                 else
                 {
                     SkeletonClient.writeNew(recipient.getText(),
-                            desiredTitle.getText(), emailBody.getText(), currentServer);
+                            desiredTitle.getText(), emailBody.getText(), 0);
                 }
             }
         });

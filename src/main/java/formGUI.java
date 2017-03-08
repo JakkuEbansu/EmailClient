@@ -34,7 +34,7 @@ public class formGUI {
     private JLabel timeSent;
     private JButton readButton;
     private JButton tagButton;
-    //private JButton deleteButton;
+    private JButton deleteButton;
 
     //Panel to display multiple panes (tag displays)
     private JTabbedPane sectionsPanel;
@@ -87,8 +87,6 @@ public class formGUI {
         });
         searchBoxButtons.add(contains);
 
-
-
         recipients.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 searchBox.append("Recipients " + searchTerm.getText() + " AND ");
@@ -116,6 +114,12 @@ public class formGUI {
         });
 
         searchBoxButtons.add(searchTerm);
+
+        sendQueryButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                SkeletonClient.searchQuery(searchBox.getText().split(" "), " ");
+            }
+        });
 
         searchBoxPanel.setLayout(new GridLayout(0, 1));
         searchBoxPanel.add(searchBox);

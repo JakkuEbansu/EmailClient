@@ -7,20 +7,25 @@ public class FileOperations
     public static String readFileContents(String fileName, int dataLine)
     {
         try {
-            //Set filebuffer to read desired file filename
-            FileReader fr = new FileReader(fileName);
-            BufferedReader bf = new BufferedReader(fr);
+            if (new File(fileName).exists()) {
+                //Set filebuffer to read desired file filename
+                FileReader fr = new FileReader(fileName);
+                BufferedReader bf = new BufferedReader(fr);
 
-            int currentLine = 0;
+                String lineValue = "0";
 
-            //Loop forward to desired line in file
-            while (currentLine < dataLine) {
-                currentLine++;
-                bf.readLine();
+                for (int i = 0; i < dataLine; i++)
+                {
+                    lineValue = bf.readLine();
+                }
+
+                bf.close();
+                return lineValue;
             }
-
-            return bf.readLine();
-            //Returns value of outlined line
+            else
+            {
+                return "1";
+            }
         }
         catch (Exception ioException){
             ioException.printStackTrace();
@@ -34,31 +39,51 @@ public class FileOperations
     {
         //Write to specific line of data text file, outlining desired value
         try {
-            FileWriter fw = new FileWriter("tempWrite.txt");
-            BufferedWriter bw = new BufferedWriter(fw);
-
-            FileReader fr = new FileReader(fileName);
-            BufferedReader br = new BufferedReader(fr);
-
-            String currentLine;
-            int lineBeingRead = 1;
-
-            //Read line, up until desired line and afterwards, copying and pasting to new temp file
-            //When desired line to change is found, new data is changed for old
-            while ((currentLine = br.readLine()) != null)
-            {
-                if(line == lineBeingRead)
-                {
-                    currentLine = valueToWrite;
-                }
-                bw.write(currentLine, 0, currentLine.length());
-
-                lineBeingRead++;
-            }
-
             File desiredFile = new File(fileName);
-            desiredFile.delete();
-            new File("tempWrite.txt").renameTo(desiredFile);
+
+            if (desiredFile.exists()) {
+                FileWriter fw = new FileWriter("tempWrite.txt");
+                BufferedWriter bw = new BufferedWriter(fw);
+
+                FileReader fr = new FileReader(fileName);
+                BufferedReader br = new BufferedReader(fr);
+
+                String lineValue;
+                int currentLine = 1;
+
+                while ((lineValue = br.readLine()) != null)
+                {
+                    if (currentLine == line)
+                    {
+                        bw.write(valueToWrite);
+                    }
+                    else
+                    {
+                        bw.write(lineValue);
+                    }
+                    bw.newLine();
+                    currentLine ++;
+                }
+
+                desiredFile.delete();
+                new File("tempWrite.txt").renameTo(desiredFile);
+
+                bw.close();
+                br.close();
+            }
+            else
+            {
+                //If the file does not exist, write value to first line in the file
+                FileWriter fw = new FileWriter(desiredFile);
+                BufferedWriter bw = new BufferedWriter(fw);
+
+                bw.write(valueToWrite);
+                bw.newLine();
+                bw.newLine();
+                bw.newLine();
+                bw.newLine();
+                bw.close();
+            }
 
             return 0;
         }

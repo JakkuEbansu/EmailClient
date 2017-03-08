@@ -3,6 +3,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.MessageIDTerm;
 import javax.persistence.*;
+import java.io.File;
 import java.text.*;
 import java.util.*;
 
@@ -10,10 +11,20 @@ public class SkeletonClient
 {
     public static void main(String [] args)
     {
+        //On first boot: (Does secure file exist..?)
+        File ifExists = new File("secure0.txt");
+
+        if (!ifExists.exists())
+        {
+            //Prompt for mailhost, username, password of as many clients as desired- save to file
+            CredentialsPromptGUI.promptGUI();
+        }
+
+        //Retrieve emails from IMAP, store to database
+        updateEmails();
+
         //Call GUI setup
         ClientGUI gui = new ClientGUI();
-        gui.setup();
-        updateEmails();
     }
 
     //TODO: Implement multiple servers - i.e. need to write to mailData, add to client
@@ -234,19 +245,25 @@ public class SkeletonClient
                     DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
                     //TODO: Handle exceptions here
-                    Date date1 = df.parse(providedQuery[counter + 1]);
-                    Date date2 = df.parse(providedQuery[counter + 2]);
+                    try {
+                        Date date1 = df.parse(providedQuery[counter + 1]);
+                        Date date2 = df.parse(providedQuery[counter + 2]);
 
-                    completeQuery = completeQuery.concat("eMail.receivedDate >= "
-                            + date1 + " AND email.receivedDate <= " + date2 + " ");
-                    counter = counter + 3;
+                        completeQuery = completeQuery.concat("eMail.receivedDate >= "
+                                + date1 + " AND email.receivedDate <= " + date2 + " ");
+                        counter = counter + 3;
+                    }
+                    catch(ParseException pex)
+                    {
+                        pex.printStackTrace();
+                    }
                 } else if (providedQuery[counter].equalsIgnoreCase("Recipients ")) {
                     //WHERE email recipients contain particular String
                     completeQuery = completeQuery.concat("eMail.getRecipients() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
                 } else if (providedQuery[counter].equalsIgnoreCase("Tag ")) {
                     //WHERE email is already tagged with another tag
-                    completeQuery = completeQuery.concat("eMail.getTags() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    completeQuery = completeQuery.concat("eMail.tags LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
                 } else if (providedQuery[counter].equalsIgnoreCase("Message_ID ")) {
                     //WHERE email matches message ID - probably just used for behind the scenes search
@@ -256,7 +273,6 @@ public class SkeletonClient
             }
         }
 
-        completeQuery = completeQuery + ";";
         tagQuery = em.createQuery(completeQuery, eMailObject.class);
 
         //Return results as List
