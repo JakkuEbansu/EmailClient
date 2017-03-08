@@ -61,10 +61,10 @@
                       <text value="Contains()"/>
                     </properties>
                   </component>
-                  <component id="f4557" class="javax.swing.JButton" binding="dateMatch">
+                  <component id="f4557" class="javax.swing.JButton" binding="dateRange">
                     <constraints/>
                     <properties>
-                      <text value="DateMatch()"/>
+                      <text value="DateRange()"/>
                     </properties>
                   </component>
                   <component id="4b249" class="javax.swing.JButton" binding="recipients">
@@ -83,6 +83,18 @@
                     <constraints/>
                     <properties>
                       <text value="Tag()"/>
+                    </properties>
+                  </component>
+                  <component id="ec94f" class="javax.swing.JButton" binding="sentDateButton" default-binding="true">
+                    <constraints/>
+                    <properties>
+                      <text value="sentDate()"/>
+                    </properties>
+                  </component>
+                  <component id="898d4" class="javax.swing.JButton" binding="receivedDateButton">
+                    <constraints/>
+                    <properties>
+                      <text value="receivedDate()"/>
                     </properties>
                   </component>
                   <component id="4d15e" class="javax.swing.JButton" binding="sendQueryButton" default-binding="true">

@@ -1,4 +1,6 @@
 import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.mail.search.MessageIDTerm;
 import javax.persistence.*;
 import java.text.*;
@@ -14,6 +16,7 @@ public class SkeletonClient
         updateEmails();
     }
 
+    //TODO: Implement multiple servers - i.e. need to write to mailData, add to client
     //Retrieves emails from IMAP mailstore
     public static void updateEmails()
     {
@@ -316,5 +319,70 @@ public class SkeletonClient
     {
         TFIDF tfidfCalculator = new TFIDF();
         tfidfCalculator.tfidf(email);
+    }
+
+    //TODO: Handle messaging exceptions more nicely
+    //Create connection to server, send message through desired server in reply to desired email
+    public static void writeReply(String emailToSend, eMailObject emailToReply)
+    {
+        String mailHost = FileOperations.retrieveCredentials("mailHost", emailToReply.getMailServer());
+        String userName = FileOperations.retrieveCredentials("userName", emailToReply.getMailServer());
+        String password = FileOperations.retrieveCredentials("password", emailToReply.getMailServer());
+
+        Properties props = new Properties();
+        props.put("mail.host", mailHost);
+        props.put("mail.user", userName);
+        Session session = Session.getInstance(props, null);
+
+        try{
+            Message replyMessage = new MimeMessage(session);
+
+            //TODO: Is this gonna be the right address?
+            replyMessage.addRecipient(Message.RecipientType.TO,
+                    new InternetAddress(emailToReply.getRecipients().get(0).toString()));
+
+            replyMessage.setSubject("Re: " + emailToReply.getSubject());
+
+            replyMessage.setText(emailToSend);
+
+            replyMessage.setSentDate(new Date());
+
+            Transport.send(replyMessage);
+        }
+        catch (MessagingException mex) {
+            mex.printStackTrace();
+        }
+
+    }
+
+    public static void writeNew(String to, String subject, String body, int currentServer)
+    {
+        String mailHost = FileOperations.retrieveCredentials("mailHost", currentServer);
+        String userName = FileOperations.retrieveCredentials("userName", currentServer);
+        String password = FileOperations.retrieveCredentials("password", currentServer);
+
+        Properties props = new Properties();
+        props.put("mail.host", mailHost);
+        props.put("mail.user", userName);
+        Session session = Session.getInstance(props, null);
+
+        try{
+            Message newMessage = new MimeMessage(session);
+
+            //TODO: Is this gonna be the right address?
+            newMessage.addRecipient(Message.RecipientType.TO,
+                    new InternetAddress(to));
+
+            newMessage.setSubject(subject);
+
+            newMessage.setText(body);
+
+            newMessage.setSentDate(new Date());
+
+            Transport.send(newMessage);
+        }
+        catch (MessagingException mex) {
+            mex.printStackTrace();
+        }
     }
 }

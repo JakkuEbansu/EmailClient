@@ -13,7 +13,7 @@ public class formGUI {
     private JTextArea searchBox;
     private JButton tag;
     private JButton senders;
-    private JButton dateMatch;
+    private JButton dateRange;
     private JButton contains;
     private JTextField searchTerm;
     private JButton recipients;
@@ -34,7 +34,7 @@ public class formGUI {
     private JLabel timeSent;
     private JButton readButton;
     private JButton tagButton;
-    private JButton deleteButton;
+    //private JButton deleteButton;
 
     //Panel to display multiple panes (tag displays)
     private JTabbedPane sectionsPanel;
@@ -44,12 +44,16 @@ public class formGUI {
     private JLabel tagLabel;
     private JPanel singleEmailButtons;
     private JPanel multiTagPane;
+    private JButton sentDateButton;
+    private JButton receivedDateButton;
+
+    private String query = "";
 
     public formGUI(String[] panes, String[] sections) {
         //Buttons for the toolbar
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                ClientGUI.writeEmail(null);
+                ClientGUI.writeNewEmail();
             }
         });
         toolBar.add(newButton);
@@ -64,45 +68,54 @@ public class formGUI {
         //Components for the searchbox - these should update the searchbox
         senders.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-
+                searchBox.append("Senders " + searchTerm.getText() + " AND ");
             }
         });
         searchBoxButtons.add(senders);
 
-        dateMatch.addActionListener(new ActionListener() {
+        dateRange.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-
+                searchBox.append("DateMatch " + searchTerm.getText() + " AND ");
             }
         });
-        searchBoxButtons.add(dateMatch);
+        searchBoxButtons.add(dateRange);
 
         contains.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-
+                searchBox.append("Contains " + searchTerm.getText() + " AND ");
             }
         });
         searchBoxButtons.add(contains);
 
-        searchTerm.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
 
-            }
-        });
-        searchBoxButtons.add(searchTerm);
 
         recipients.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-
+                searchBox.append("Recipients " + searchTerm.getText() + " AND ");
             }
         });
         searchBoxButtons.add(recipients);
 
         tag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-
+                searchBox.append("Tag " + searchTerm.getText() + " AND ");
             }
         });
         searchBoxButtons.add(tag);
+
+        sentDateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                searchBox.append("Sent-Date " + searchTerm.getText() + " AND ");
+            }
+        });
+
+        receivedDateButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                searchBox.append("Received-Date " + searchTerm.getText() + " AND ");
+            }
+        });
+
+        searchBoxButtons.add(searchTerm);
 
         searchBoxPanel.setLayout(new GridLayout(0, 1));
         searchBoxPanel.add(searchBox);
@@ -162,6 +175,7 @@ public class formGUI {
                     });
                     singleEmailButtons.add(tagButton);
 
+                    //TODO : Implement email deletion, eventually
                 /*deleteButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
                         ClientGUI.removeEmail(currentEmail);
