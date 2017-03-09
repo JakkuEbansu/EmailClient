@@ -245,5 +245,67 @@ public class ClientGUI
         readEmailGUIContainer.add(addReply);
 
         readEmailWindow.setVisible(true);
+        readEmailWindow.pack();
+    }
+
+    public static void displayResults(final eMailObject[] results, String[] query)
+    {
+        final JFrame displayResultsWindow = new JFrame("Results of " + Arrays.toString(query));
+        final Container dRWContainer = displayResultsWindow.getContentPane();
+        dRWContainer.setLayout(new GridLayout(0, 1));
+
+        for (eMailObject result : results) {
+            final JPanel singleResultPane = new JPanel();
+            final eMailObject currentEmail = result;
+
+            JLabel timeSent = new JLabel();
+            timeSent.setText(currentEmail.getReceivedDate().toString());
+            singleResultPane.add(timeSent);
+
+            JLabel emailHeader = new JLabel();
+            emailHeader.setText(currentEmail.getSubject());
+            singleResultPane.add(emailHeader);
+
+            JLabel senderLabel = new JLabel();
+            senderLabel.setText(currentEmail.getSenders().toString());
+            singleResultPane.add(senderLabel);
+
+            JLabel tagLabel = new JLabel();
+            if (currentEmail.getTags() != null) {
+                tagLabel.setText(currentEmail.getTags().toString());
+            }
+            singleResultPane.add(tagLabel);
+
+            JPanel singleEmailButtons = new JPanel();
+
+            JButton readButton = new JButton("Read");
+            readButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    ClientGUI.readEmail(currentEmail);
+                }
+            });
+            singleEmailButtons.add(readButton);
+
+            JButton tagButton = new JButton("Tag");
+            tagButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    ClientGUI.addTagGUI(currentEmail);
+                }
+            });
+            singleEmailButtons.add(tagButton);
+
+            JButton replyButton = new JButton("Reply");
+            replyButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    ClientGUI.writeEmailReply(currentEmail);
+                }
+            });
+            singleEmailButtons.add(replyButton);
+
+            singleResultPane.add(singleEmailButtons);
+            dRWContainer.add(singleResultPane);
+        }
+        displayResultsWindow.setVisible(true);
+        displayResultsWindow.pack();
     }
 }

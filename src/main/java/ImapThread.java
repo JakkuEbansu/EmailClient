@@ -3,7 +3,7 @@ public class ImapThread extends Thread {
 
     private int serverNumber;
 
-    public ImapThread(int serverNum)
+    ImapThread(int serverNum)
     {
         serverNumber = serverNum;
     }

@@ -1,11 +1,15 @@
 import javax.mail.Address;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.*;
 
 //Object setup for storage of individual emails - to store in arrays, databases, and the like
-
+@Entity
 public class eMailObject {
-    public List<Address> senders; //List of email senders
-    public List<Address> recipients; //Receivers of the email
+    @Id
+    long id; //ID for database -primary key
+    public List<String> senders; //List of email senders
+    public List<String> recipients; //Receivers of the email
     public Date sentDate; //Date sent
     public Date receivedDate; //Date received/written into client?
     public String subject; //Email subject
@@ -17,9 +21,10 @@ public class eMailObject {
     public String firstLine; //Storage of first line of the email //TODO
     //Potential future additions to object - reference, tags, etc.
 
-    public eMailObject(List<Address> senders, List<Address> recipients,
+    public eMailObject(List<String> senders, List<String> recipients,
                        Date sentDate, Date receivedDate, String subject, int message_ID, int mailServer)
     {
+        this.id = message_ID;
         this.senders = senders;
         this.recipients = recipients;
         this.sentDate = sentDate;
@@ -31,19 +36,19 @@ public class eMailObject {
         this.mailServer = mailServer;
     }
 
-    public List<Address> getSenders() {
+    public List<String> getSenders() {
         return senders;
     }
 
-    public void setSenders(List<Address> senders) {
+    public void setSenders(List<String> senders) {
         this.senders = senders;
     }
 
-    public List<Address> getRecipients() {
+    public List<String> getRecipients() {
         return recipients;
     }
 
-    public void setRecipients(List<Address> recipients) {
+    public void setRecipients(List<String> recipients) {
         this.recipients = recipients;
     }
 

@@ -1,10 +1,10 @@
 import java.io.*;
 
 //Essentially is just a box for holding file operations, reading and writing values
-public class FileOperations
+class FileOperations
 {
     //Allows reading of particular line in a data file
-    public static String readFileContents(String fileName, int dataLine)
+    static String readFileContents(String fileName, int dataLine)
     {
         try {
             if (new File(fileName).exists()) {
@@ -24,6 +24,7 @@ public class FileOperations
             }
             else
             {
+                //TODO: Make file, enter '1' as response
                 return "1";
             }
         }
@@ -35,7 +36,7 @@ public class FileOperations
     }
 
     //Allows writing to particular line in a data file
-    public static int writeFileContents(String fileName, int line, String valueToWrite)
+    static int writeFileContents(String fileName, int line, String valueToWrite)
     {
         //Write to specific line of data text file, outlining desired value
         try {
@@ -96,7 +97,7 @@ public class FileOperations
     }
 
     //Easy way to retrieve credentials and allow future unsalting
-    public static String retrieveCredentials(String mode, int serverNumber)
+    static String retrieveCredentials(String mode, int serverNumber)
     {
         if (mode.equals("mailHost")) {
             return readFileContents("secure" + serverNumber + ".txt", 1);
@@ -115,7 +116,7 @@ public class FileOperations
 
     //TODO: Salt!
     //Easy way to store credentials and eventually salt
-    public static void storeCredentials(String mode, String toStore, int serverNumber)
+    static void storeCredentials(String mode, String toStore, int serverNumber)
     {
         if (mode.equals("mailHost")) {
             writeFileContents("secure" + serverNumber + ".txt", 1, toStore);

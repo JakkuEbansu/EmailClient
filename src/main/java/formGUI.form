@@ -7,14 +7,14 @@
     <properties>
       <enabled value="true"/>
     </properties>
-    <border type="none"/>
+    <border type="none" title="Skeleton Email Client"/>
     <children>
       <toolbar id="71a00" binding="toolBar">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
             <preferred-size width="-1" height="20"/>
           </grid>
-          <gridbag weightx="0.0" weighty="0.0" ipadx="1000"/>
+          <gridbag weightx="0.0" weighty="0.0"/>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -45,7 +45,10 @@
                   </grid>
                   <gridbag weightx="0.0" weighty="0.0"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <background color="-918273"/>
+                  <editable value="false"/>
+                </properties>
               </component>
               <grid id="bf691" binding="searchBoxButtons" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                 <constraints>
@@ -97,10 +100,10 @@
                       <text value="receivedDate()"/>
                     </properties>
                   </component>
-                  <component id="4d15e" class="javax.swing.JButton" binding="sendQueryButton" default-binding="true">
+                  <component id="6d496" class="javax.swing.JButton" binding="clearButton">
                     <constraints/>
                     <properties>
-                      <text value="Send Query"/>
+                      <text value="Delete Query"/>
                     </properties>
                   </component>
                 </children>
@@ -113,6 +116,15 @@
                   <gridbag weightx="0.0" weighty="0.0"/>
                 </constraints>
                 <properties/>
+              </component>
+              <component id="4d15e" class="javax.swing.JButton" binding="sendQueryButton" default-binding="true">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <gridbag weightx="0.0" weighty="0.0"/>
+                </constraints>
+                <properties>
+                  <text value="Send Query"/>
+                </properties>
               </component>
             </children>
           </grid>
