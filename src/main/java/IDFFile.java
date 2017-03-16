@@ -1,3 +1,7 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.*;
 import java.util.*;
 
@@ -29,33 +33,52 @@ public class IDFFile
             { idfMap.put(term, 1); }
         }
 
-        int lineCounter = 1;
+        JSONArray map = new JSONArray();
 
         //Write this to file
         for (Map.Entry<String, Integer> entry : idfMap.entrySet())
         {
-            FileOperations.writeFileContents("idfMapContents.txt", lineCounter, entry.getKey() + " " + entry.getValue());
-            lineCounter++;
+            JSONObject mapEntry = new JSONObject();
+            mapEntry.put("Key", entry.getKey());
+            mapEntry.put("Value", entry.getValue());
+            map.add(mapEntry);
+        }
+
+        try {
+            FileWriter file = new FileWriter("idfMapContents.txt");
+
+            file.write(map.toJSONString());
+            file.close();
+        }
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
         }
     }
 
     //Method to read IDF values into IDFmap, at startup of program
     public void setup()
     {
+        JSONParser parser = new JSONParser();
+
         try {
-            //Set filebuffer to read desired file filename
-            FileReader fr = new FileReader("idfMapContents.txt");
-            BufferedReader bf = new BufferedReader(fr);
 
-            String currentLine;
+            Object obj = parser.parse(new FileReader("idfMapContents.txt"));
 
-            //Loop through file, adding key/value pairs to map
-            while ((currentLine = bf.readLine()) != null) {
-                String[] lineContents = currentLine.split(" ");
-                idfMap.put(lineContents[0], Integer.parseInt(lineContents[1]));
+            JSONArray arr = (JSONArray) obj;
+            Iterator<JSONObject> iter = arr.iterator();
+
+            while (iter.hasNext())
+            {
+                JSONObject next = iter.next();
+                System.out.println(next.toJSONString());
+                idfMap.put(next.get("Key").toString(),
+                        Integer.parseInt(next.get("Value").toString()));
             }
+
         }
-        catch (Exception ioException){
+        catch (Exception ioException)
+        {
             ioException.printStackTrace();
         }
     }

@@ -1,3 +1,4 @@
+import javax.jdo.JDOHelper;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -23,6 +24,7 @@ public class SkeletonClient
 
         //Retrieve emails from IMAP, store to database
         updateEmails();
+        updateTFIDF();
 
         //Call GUI setup
         ClientGUI gui = new ClientGUI();
@@ -40,8 +42,6 @@ public class SkeletonClient
             threads[i] = new ImapThread(i);
             threads[i].start();
         }
-
-        updateTFIDF();
     }
 
     //Updates TFIDF scores for emails, allowing easy search
@@ -137,7 +137,6 @@ public class SkeletonClient
         //Loop through supplied array of emails, add to EntityManager
         for (eMailObject e : emailsToStore)
         {
-            System.out.println(e.getSubject());
             em.persist(e);
         }
 
@@ -156,24 +155,25 @@ public class SkeletonClient
     {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("emailStorage.odb");
         EntityManager em = emf.createEntityManager();
-        em.getTransaction().begin();
 
-        TypedQuery<eMailObject> tagQuery;
+        //Query tagQuery;
 
         for (eMailObject email : emailsToUpdate)
         {
-            email.addTag(tagToAdd);
+            //tagQuery = em.createQuery("UPDATE eMail " +
+                   // "SET eMail.tags.add(\"" + tagToAdd + "\") WHERE " +
+                    //"eMail.message_ID = " + email.getMessage_ID(), eMailObject.class);
+            eMailObject emailToFind = em.find(eMailObject.class, email.getMessage_ID());
 
-            tagQuery = em.createQuery("UPDATE eMail " +
-                    "SET eMail.addTag(" + tagToAdd + ") WHERE " +
-                    "eMail.message_ID = " + email.getMessage_ID() + ";", eMailObject.class);
+            em.getTransaction().begin();
+            emailToFind.getTags().add(tagToAdd);
+            JDOHelper.makeDirty(emailToFind, "tags");
+            em.getTransaction().commit();
 
-            if (!tagQuery.getResultList().isEmpty())
-            {
-                return 0;
-            }
+            TypedQuery<eMailObject> outputQuery = em.createQuery("SELECT eMail FROM eMailObject email WHERE eMail.message_ID = " + email.getMessage_ID(), eMailObject.class);
+            System.out.println(Arrays.toString(outputQuery.getSingleResult().getTags().toArray()));
         }
-        return -1;
+        return 0;
     }
 
     //Retrieve emails from database, dependant on query
@@ -192,7 +192,7 @@ public class SkeletonClient
 
         if (providedQuery[0].equals(""))
         {
-            completeQuery = "SELECT eMail FROM eMailObject";
+            completeQuery = "SELECT eMail FROM eMailObject email";
         }
         else {
             completeQuery = "SELECT eMail FROM eMailObject email WHERE ";
@@ -230,17 +230,17 @@ public class SkeletonClient
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Sender ")) {
                     //WHERE email sender contains search term
-                    completeQuery = completeQuery.concat("eMail.getSenders().toArray().toString() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    completeQuery = completeQuery.concat("eMail.getSenders().toArray() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Sent-Date ")) {
                     //WHERE email sent date fits query's
-                    completeQuery = completeQuery.concat("eMail.sentDate.toString() = '" + providedQuery[counter + 1] + "' ");
+                    completeQuery = completeQuery.concat("eMail.sentDate.toString() LIKE \"%" + providedQuery[counter + 1] + "%\" ");
                     counter = counter + 2;
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Received-Date ")) {
                     //WHERE email received date fits query's
-                    completeQuery = completeQuery.concat("eMail.receivedDate.toString() = '" + providedQuery[counter + 1] + "' ");
+                    completeQuery = completeQuery.concat("eMail.receivedDate.toString() LIKE \"%" + providedQuery[counter + 1] + "%\" ");
                     counter = counter + 2;
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Date-Range ")) {
@@ -276,6 +276,9 @@ public class SkeletonClient
             }
         }
 
+        completeQuery = completeQuery.concat(" " + order);
+        System.out.println(completeQuery);
+
         tagQuery = em.createQuery(completeQuery, eMailObject.class);
 
         //Return results as List
@@ -287,11 +290,6 @@ public class SkeletonClient
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];
         results.toArray(resultsAsArray);
-
-        for (eMailObject result : results)
-        {
-            System.out.println(result.getSubject());
-        }
 
         return resultsAsArray;
     }
@@ -370,16 +368,20 @@ public class SkeletonClient
         return result;
     }
 
-    static int countEmails()
+    static long countEmails()
     {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("emailStorage.odb");
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
 
-        TypedQuery<eMailObject> countQuery;
+        Query countQuery;
 
-        countQuery = em.createQuery("SELECT COUNT(eMail) FROM eMailObject", eMailObject.class);
-        return Integer.parseInt(countQuery.getSingleResult().toString());
+        countQuery = em.createQuery("SELECT COUNT(email) FROM eMailObject email", eMailObject.class);
+        em.getTransaction().commit();
+
+        long result = Long.parseLong(countQuery.getSingleResult().toString());
+
+        return result;
     }
 
     //Creates new instance of TFIDF calculation, adds TFIDF information to the database

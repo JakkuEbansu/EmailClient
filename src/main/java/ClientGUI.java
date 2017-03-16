@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
 import javax.swing.*;
@@ -23,6 +24,9 @@ public class ClientGUI
     //Updates pane/sections data, re-draws GUI
     public void setup()
     {
+        desiredNoPanes = 1;
+        desiredNoSections = 1;
+
         String[] panes = new String[desiredNoPanes];
         String[] sections = new String[desiredNoSections];
 
@@ -32,14 +36,14 @@ public class ClientGUI
         {
             //Read desired tag(s) from panes data file
             //panes[i] = FileOperations.readFileContents("panesData.txt", i + 1);
-            panes[i] = "Pane";
+            panes[i] = "Tag!";
         }
 
         for(int i = 0; i < desiredNoSections; i++)
         {
             //Read desired section(s) from panes data file
             //sections[i] = FileOperations.readFileContents("sectionsData.txt", i + 1);
-            sections[i] = "Section";
+            sections[i] = "Home";
         }
 
         //Initialise - draw window, basic components
@@ -56,8 +60,18 @@ public class ClientGUI
         final java.util.List<eMailObject> emailsToUpdate = new ArrayList<eMailObject>();
         emailsToUpdate.add(targetEmail);
 
-        final JLabel title = new JLabel(targetEmail.getSubject() + "\nReceived On: " + targetEmail.getReceivedDate());
-        tagGUIContainer.add(title);
+        JPanel emailInfoPanel = new JPanel();
+        emailInfoPanel.setLayout(new GridLayout(0, 1));
+
+        final JLabel sender = new JLabel(Arrays.toString(targetEmail.getSenders().toArray()));
+        emailInfoPanel.add(sender);
+
+        final JLabel title = new JLabel(targetEmail.getSubject());
+        emailInfoPanel.add(title);
+
+        final JLabel received = new JLabel("" + targetEmail.getReceivedDate());
+        emailInfoPanel.add(received);
+        tagGUIContainer.add(emailInfoPanel);
 
         //Add input field to outline the tag itself
         final JTextField input = new JTextField("", 10);
@@ -68,11 +82,12 @@ public class ClientGUI
         JButton updateButton = new JButton("Add Tag");
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                SkeletonClient.updateTags(emailsToUpdate, input.toString());
+                SkeletonClient.updateTags(emailsToUpdate, input.getText());
                 tagGUIWindow.dispose();}
         });
         tagGUIContainer.add(updateButton);
         tagGUIWindow.setVisible(true);
+        tagGUIWindow.pack();
     }
 
     //Intention : Simple function that springs up a nice little window, which you can use to write a reply to an email
@@ -84,13 +99,21 @@ public class ClientGUI
         writeEmailWindow.setLayout(new GridLayout(0, 1));
         writeEmailWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-        final JLabel title = new JLabel(replyEmail.getSubject() + "\nReceived On: " + replyEmail.getReceivedDate());
-        writeEmailContainer.add(title);
+        JPanel writePanel = new JPanel();
+        writePanel.setLayout(new GridLayout(0, 1));
+
+        final JLabel title = new JLabel(replyEmail.getSubject());
+        writePanel.add(title);
+
+        final JLabel date = new JLabel("Received On: " + replyEmail.getReceivedDate());
+        writePanel.add(date);
+        writeEmailContainer.add(writePanel);
 
         String emailBody = SkeletonClient.retrieveBody(replyEmail);
-        final String[] splitBody = emailBody.split("[?]");
+        final String[] splitBody = emailBody.split("\\?");
 
         JPanel inlineReplies = new JPanel();
+        inlineReplies.setLayout(new GridLayout(0, 1));
 
         final String[] emailQuestions = new String[splitBody.length];
         final JTextField[] inlineReply = new JTextField[splitBody.length];
@@ -107,6 +130,8 @@ public class ClientGUI
 
             currentArrayIndex = currentArrayIndex++;
         }
+
+        writeEmailContainer.add(inlineReplies);
 
         JButton sendButton = new JButton("Send");
         sendButton.addActionListener(new ActionListener() {
@@ -125,9 +150,10 @@ public class ClientGUI
         });
         writeEmailContainer.add(sendButton);
         writeEmailWindow.setVisible(true);
+        writeEmailWindow.pack();
     }
 
-    //Intention : Simple function that springs up a nice little window, which you can use to write a reply to an email
+    //Intention : Simple function that springs up a nice little window, which you can use to write an email
     public static void writeNewEmail()
     {
         final JFrame writeEmailWindow = new JFrame("New Email");
@@ -136,14 +162,21 @@ public class ClientGUI
         writeEmailWindow.setLayout(new GridLayout(0, 1));
         writeEmailWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
+        JPanel emailInfo = new JPanel();
+        emailInfo.setLayout(new GridLayout(0, 2));
+
         final JLabel title = new JLabel("Subject: ");
-        writeEmailContainer.add(title);
+        emailInfo.add(title);
 
         final JTextField desiredTitle = new JTextField();
-        writeEmailContainer.add(desiredTitle);
+        emailInfo.add(desiredTitle);
+
+        final JLabel recipientTitle = new JLabel("Recipient: ");
+        emailInfo.add(recipientTitle);
 
         final JTextField recipient = new JTextField();
-        writeEmailContainer.add(recipient);
+        emailInfo.add(recipient);
+        writeEmailWindow.add(emailInfo);
 
         int numberOfServers = Integer.parseInt(FileOperations.readFileContents("mailData.txt", 1));
 
@@ -151,7 +184,7 @@ public class ClientGUI
 
         int currentServer = 0;
 
-        for (int i = 0; i <= numberOfServers; i++)
+        for (int i = 0; i < numberOfServers; i++)
         {
             JButton mailServerButton = new JButton(FileOperations.retrieveCredentials("userName", i) + ", " +
                     FileOperations.retrieveCredentials("mailHost", i));
@@ -172,6 +205,7 @@ public class ClientGUI
         writeEmailContainer.add(mailServerButtonPanel);
 
         final JTextField emailBody = new JTextField();
+        writeEmailContainer.add(emailBody);
 
         JButton sendButton = new JButton("Send");
         sendButton.addActionListener(new ActionListener() {
@@ -179,7 +213,7 @@ public class ClientGUI
             {
                 JLabel alertLabel;
 
-                if (desiredTitle.equals(""))
+                if (desiredTitle.getText().equals(""))
                 {
                     alertLabel = new JLabel("Add Email subject!");
                     writeEmailContainer.add(alertLabel);
@@ -203,6 +237,7 @@ public class ClientGUI
         });
         writeEmailContainer.add(sendButton);
         writeEmailWindow.setVisible(true);
+        writeEmailWindow.pack();
     }
 
     //Opens a 'read email' dialogue, with more detailed information about said email including retrieving the body of
@@ -214,35 +249,46 @@ public class ClientGUI
         readEmailWindow.setLayout(new GridLayout(0, 1));
         readEmailWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
+        final JPanel emailInfo = new JPanel();
+        emailInfo.setLayout(new GridLayout(0, 1));
+
         final JLabel senders = new JLabel("From: " + targetEmail.getSenders().toString());
-        readEmailGUIContainer.add(senders);
+        emailInfo.add(senders);
 
         final JLabel recipients = new JLabel("To: " + targetEmail.getRecipients().toString());
-        readEmailGUIContainer.add(recipients);
-
-        final JLabel tags = new JLabel("Tags: " + targetEmail.getTags().toString());
-        readEmailGUIContainer.add(tags);
+        emailInfo.add(recipients);
 
         final JLabel sentDate = new JLabel("Sent: " + targetEmail.getSentDate().toString());
-        readEmailGUIContainer.add(sentDate);
+        emailInfo.add(sentDate);
 
         final JLabel receivedDate = new JLabel("Received " + targetEmail.getReceivedDate().toString());
-        readEmailGUIContainer.add(receivedDate);
+        emailInfo.add(receivedDate);
+
+        final JLabel tags = new JLabel("Tags: " + targetEmail.getTags().toString());
+        emailInfo.add(tags);
+        readEmailGUIContainer.add(emailInfo);
+
+        final JLabel subject = new JLabel("Subject: " + targetEmail.getSubject());
+        emailInfo.add(subject);
+
+        final JTextArea email = new JTextArea(SkeletonClient.retrieveBody(targetEmail));
+        readEmailGUIContainer.add(email);
+
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(1, 0));
+        readEmailGUIContainer.add(buttonsPanel);
 
         final JButton addTag = new JButton("Add tag to this email");
         addTag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) { addTagGUI(targetEmail); }
         });
-        readEmailGUIContainer.add(addTag);
-
-        final JTextArea email = new JTextArea(SkeletonClient.retrieveBody(targetEmail));
-        readEmailGUIContainer.add(email);
+        buttonsPanel.add(addTag);
 
         final JButton addReply = new JButton("Reply to this email");
-        addTag.addActionListener(new ActionListener() {
+        addReply.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) { writeEmailReply(targetEmail); }
         });
-        readEmailGUIContainer.add(addReply);
+        buttonsPanel.add(addReply);
 
         readEmailWindow.setVisible(true);
         readEmailWindow.pack();

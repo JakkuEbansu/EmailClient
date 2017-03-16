@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 
 public class formGUI {
 
+    private boolean applyTags = false;
+
     //Buttons for Toolbar
     private JButton newButton;
     private JButton syncButton;
@@ -47,6 +49,9 @@ public class formGUI {
     private JButton sentDateButton;
     private JButton receivedDateButton;
     private JButton clearButton;
+    private JTextField tagName;
+    private JButton tagApplyButton;
+    private JPanel applyTagPanel;
 
     public formGUI(String[] panes, String[] sections) {
         //Buttons for the toolbar
@@ -154,6 +159,7 @@ public class formGUI {
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 searchBox.setText("");
+                tagName.setText("");
             }
         });
         searchBoxButtons.add(clearButton);
@@ -163,7 +169,10 @@ public class formGUI {
         sendQueryButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 String[] searchQuery = searchBox.getText().split(" ");
+
+                eMailObject[] editTag = applyTags? SkeletonClient.searchQuery(searchQuery, tagName.getText()) : SkeletonClient.searchQuery(searchQuery, " ");
                 eMailObject[] results = SkeletonClient.searchQuery(searchQuery, " ");
+
                 ClientGUI.displayResults(results, searchQuery);
             }
         });
@@ -173,6 +182,19 @@ public class formGUI {
         searchBoxPanel.add(searchBoxButtons);
         searchBoxPanel.add(sendQueryButton);
         searchBoxPanel.add(searchTerm);
+
+        JPanel applyTagPanel = new JPanel();
+        applyTagPanel.setLayout(new GridLayout(0, 1));
+
+        tagApplyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                applyTags = true;
+            }
+        });
+
+        applyTagPanel.add(tagName);
+        applyTagPanel.add(tagApplyButton);
+        toolBar.add(applyTagPanel);
 
         for (String section : sections) {
 
@@ -184,47 +206,49 @@ public class formGUI {
 
                 eMailObject[] paneQueryResults = SkeletonClient.searchQuery(searchArray, " ");
 
-                int forParameter;
+                JPanel[] sep = new JPanel[paneQueryResults.length];
 
-                //TODO: Fix this!
-                if (paneQueryResults.length * singleEmailPane.getHeight() > tagPane.getHeight()) {
-                    forParameter = tagPane.getHeight() / singleEmailPane.getHeight();
-                } else {
-                    forParameter = paneQueryResults.length;
-                }
+                for (int i = 0; i < paneQueryResults.length; i++) {
 
-
-                for (int i = 1; i <= forParameter; i++) {
+                    JLabel tsTxt = new JLabel();
 
                     final eMailObject currentEmail = paneQueryResults[i];
 
-                    timeSent.setText(currentEmail.getReceivedDate().toString());
-                    singleEmailPane.add(timeSent);
+                    sep[i] = new JPanel();
+                    sep[i].setLayout(new GridLayout(1, 0));
 
-                    emailHeader.setText(currentEmail.getSubject());
-                    singleEmailPane.add(emailHeader);
+                    tsTxt.setText(currentEmail.getReceivedDate().toString());
+                    sep[i].add(tsTxt);
 
-                    senderLabel.setText(currentEmail.getSenders().toString());
-                    singleEmailPane.add(senderLabel);
+                    JLabel ehtxt = new JLabel();
+                    ehtxt.setText(currentEmail.getSubject());
+                    sep[i].add(ehtxt);
 
+                    JLabel sltxt = new JLabel();
+                    sltxt.setText(currentEmail.getSenders().toString());
+                    sep[i].add(sltxt);
+
+                    JLabel tltxt = new JLabel();
                     if (currentEmail.getTags() != null) {
-                        tagLabel.setText(currentEmail.getTags().toString());
+                        tltxt.setText(currentEmail.getTags().toString());
                     }
-                    singleEmailPane.add(tagLabel);
+                    sep[i].add(tltxt);
+
+                    JPanel buttons = new JPanel();
 
                     readButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.readEmail(currentEmail);
                         }
                     });
-                    singleEmailButtons.add(readButton);
+                    buttons.add(readButton);
 
                     tagButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.addTagGUI(currentEmail);
                         }
                     });
-                    singleEmailButtons.add(tagButton);
+                    buttons.add(tagButton);
 
                     //TODO : Implement email deletion, eventually
                 /*deleteButton.addActionListener(new ActionListener() {
@@ -234,9 +258,12 @@ public class formGUI {
                 });
                 singleEmailButtons.add(deleteButton);*/
 
-                    singleEmailPane.add(singleEmailButtons);
+                    sep[i].add(singleEmailButtons);
+                }
 
-                    tagPane.add(singleEmailPane);
+                for (JPanel sepComponent : sep)
+                {
+                    tagPane.add(sepComponent);
                 }
 
                 multiTagPane.add(tagPane);
