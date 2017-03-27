@@ -12,44 +12,30 @@ import javax.swing.*;
 
 public class ClientGUI
 {
-    private int desiredNoPanes;
     private int desiredNoSections;
 
     public ClientGUI(){
-        //desiredNoPanes = Integer.parseInt(FileOperations.readFileContents("panesData.txt", 0));
-        desiredNoPanes = 2;
-        //desiredNoSections = Integer.parseInt(FileOperations.readFileContents("sectionsData.txt", 0));
-        desiredNoSections = 1;
         setup();
     }
 
     //Updates pane/sections data, re-draws GUI
     public void setup()
     {
-        desiredNoPanes = 1;
-        desiredNoSections = 1;
+        desiredNoSections = FileOperations.getNumSections();
 
-        String[] panes = new String[desiredNoPanes];
         String[] sections = new String[desiredNoSections];
+        int arrayCounter = 0;
 
-        //Read line by line into the data files - for each line, the corresponding pane stores its' associated tag
-        //Or section-label
-        for(int i = 0; i < desiredNoPanes; i++)
-        {
-            //Read desired tag(s) from panes data file
-            //panes[i] = FileOperations.readFileContents("panesData.txt", i + 1);
-            panes[i] = "Tag!";
-        }
-
-        for(int i = 0; i < desiredNoSections; i++)
+        for(int i = 2; i < desiredNoSections + 2; i++)
         {
             //Read desired section(s) from panes data file
-            //sections[i] = FileOperations.readFileContents("sectionsData.txt", i + 1);
-            sections[i] = "Home";
+            sections[arrayCounter] = FileOperations.readFileContents("secData.txt", i);
+            arrayCounter++;
         }
+        System.out.println(Arrays.toString(sections));
 
         //Initialise - draw window, basic components
-        formGUI.main(panes, sections);
+        formGUI.main(sections);
     }
 
     //Intention : Simple function that springs up a nice little window, which you can use to add a tag to an email
@@ -123,7 +109,6 @@ public class ClientGUI
 
         for (String component : splitBody)
         {
-            System.out.println(" \" " + component + " \" ");
             component = component.concat("?");
             final JLabel componentLabel = new JLabel(component);
             inlineReplies.add(componentLabel);
@@ -370,5 +355,51 @@ public class ClientGUI
         }
         displayResultsWindow.setVisible(true);
         displayResultsWindow.pack();
+    }
+
+    public static void addPaneSectionsGUI()
+    {
+        final JFrame panSecWindow = new JFrame("Add a Pane/Section to the Client");
+        Container addPanSecContainer = panSecWindow.getContentPane();
+        panSecWindow.setLayout(new GridLayout(0, 1));
+        panSecWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JPanel currentSecInfoPanel = new JPanel();
+        currentSecInfoPanel.setLayout(new GridLayout(0, 1));
+
+        //Add panel - add x pane (outline tag) in y section
+        JPanel addPanel = new JPanel();
+        addPanel.setLayout(new GridLayout(0, 1));
+
+        JLabel sectionLabel = new JLabel("Section to add to: ");
+        addPanel.add(sectionLabel);
+
+        final JTextField sectionField = new JTextField("");
+        addPanel.add(sectionField);
+
+        JLabel paneLabel = new JLabel("Panel Tag to add: ");
+        addPanel.add(paneLabel);
+
+        final JTextField paneField = new JTextField("");
+        addPanel.add(paneField);
+
+        JButton addButton = new JButton("Add to GUI");
+        addPanel.add(addButton);
+
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                File ifExists = new File("section" + sectionField.getText() + ".txt");
+                if (!ifExists.exists())
+                {   FileOperations.addNewSection(sectionField.getText()); }
+
+                FileOperations.addPane(paneField.getText(), sectionField.getText());
+            }
+        });
+
+        addPanSecContainer.add(addPanel);
+        addPanSecContainer.add(addButton);
+
+        panSecWindow.setVisible(true);
+        panSecWindow.pack();
     }
 }

@@ -111,16 +111,4 @@ public class ExpandedReplies
         customReply.setVisible(true);
         customReply.pack();
     }
-
-    //Some manner of sending an email with custom reply-points
-    public void customSend(eMailObject email)
-    {
-
-    }
-
-    //Some manner to read into an email sent with custom reply points, calls customReply()
-    public void customSendRead()
-    {
-
-    }
 }

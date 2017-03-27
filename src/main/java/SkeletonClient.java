@@ -161,9 +161,6 @@ public class SkeletonClient
 
         for (eMailObject email : emailsToUpdate)
         {
-            //tagQuery = em.createQuery("UPDATE eMail " +
-                   // "SET eMail.tags.add(\"" + tagToAdd + "\") WHERE " +
-                    //"eMail.message_ID = " + email.getMessage_ID(), eMailObject.class);
             eMailObject emailToFind = em.find(eMailObject.class, email.getMessage_ID());
 
             em.getTransaction().begin();
@@ -179,7 +176,6 @@ public class SkeletonClient
     //Retrieve emails from database, dependant on query
     static eMailObject[] searchQuery(String[] providedQuery, String tagName)
     {
-        System.out.println(Arrays.toString(providedQuery));
         //Set up connection to database
         EntityManagerFactory emf =
                 Persistence.createEntityManagerFactory("emailStorage.odb");
@@ -210,13 +206,13 @@ public class SkeletonClient
                 else if (providedQuery[counter].equalsIgnoreCase("Contains")) {
 
                     //WHERE email body contains search term
-                    completeQuery = completeQuery.concat("eMail.getTfidfMap().get(\"" + providedQuery[counter + 1] + "\") IS NOT NULL ");
+                    completeQuery = completeQuery.concat("eMail.getTfidfMap().get(\'" + providedQuery[counter + 1] + "\') IS NOT NULL ");
 
                     //OR
-                    completeQuery = completeQuery.concat("OR ");
+                    //completeQuery = completeQuery.concat("OR ");
 
                     //Email subject contains search term
-                    completeQuery = completeQuery.concat("eMail.getSubject() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    //completeQuery = completeQuery.concat("eMail.getSubject() LIKE '%" + providedQuery[counter + 1] + "%' ");
 
                     //Organise query by TFIDF values - orders may stack, if more than one is applied
                     if (order.equals("")) {
@@ -229,26 +225,26 @@ public class SkeletonClient
                     //Adds two to counter, skipping past search-term
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Sender ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Sender")) {
                     //WHERE email sender contains search term
                     completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.getSenders()");
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Sent-Date ")) {
+                    //TODO : FIX!
+                } else if (providedQuery[counter].equalsIgnoreCase("Sent-Date")) {
                     //WHERE email sent date fits query's
                     completeQuery = completeQuery.concat("eMail.sentDate.toString() LIKE \"%" + providedQuery[counter + 1] + "%\" ");
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Received-Date ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Received-Date")) {
                     //WHERE email received date fits query's
-                    completeQuery = completeQuery.concat("eMail.receivedDate.toString() LIKE \"%" + providedQuery[counter + 1] + "%\" ");
+                    completeQuery = completeQuery.concat("eMail.receivedDate.toString() LIKE '%" + providedQuery[counter + 1] + "%' ");
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Date-Range ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Date-Range")) {
                     //WHERE email is within a range of two dates
                     DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
-                    //TODO: Handle exceptions here
                     try {
                         Date date1 = df.parse(providedQuery[counter + 1]);
                         Date date2 = df.parse(providedQuery[counter + 2]);
@@ -261,26 +257,25 @@ public class SkeletonClient
                     {
                         pex.printStackTrace();
                     }
-                } else if (providedQuery[counter].equalsIgnoreCase("Recipients ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Recipients")) {
                     //WHERE email recipients contain particular String
                     completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.getRecipients()");
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Tag ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Tag")) {
                     //WHERE email is already tagged with another tag
                     completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.tags");
                     counter = counter + 2;
 
-                } else if (providedQuery[counter].equalsIgnoreCase("Message_ID ")) {
+                } else if (providedQuery[counter].equalsIgnoreCase("Message_ID")) {
                     //WHERE email matches message ID - probably just used for behind the scenes search
-                    completeQuery = completeQuery.concat("eMail.getMessage_ID() = " + providedQuery[counter + 1] + " ");
+                    completeQuery = completeQuery.concat("eMail.getMessage_ID()= " + providedQuery[counter + 1] + " ");
                     counter = counter + 2;
                 }
             }
         }
 
-        completeQuery = completeQuery.concat(" " + order);
-        System.out.println(completeQuery);
+        completeQuery = completeQuery.concat(order);
 
         tagQuery = em.createQuery(completeQuery, eMailObject.class);
 
@@ -288,7 +283,7 @@ public class SkeletonClient
         List<eMailObject> results = tagQuery.getResultList();
 
         //Updates tags for emails, unless tag is empty
-        if (!tagName.equals(" ")) {   updateTags(results, tagName);   }
+        if (!tagName.equals("")) {   updateTags(results, tagName);   }
 
         //Convert list into array of eMailObjects
         eMailObject[] resultsAsArray = new eMailObject[results.size()];

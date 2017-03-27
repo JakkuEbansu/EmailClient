@@ -186,26 +186,7 @@
         </constraints>
         <properties/>
         <border type="none"/>
-        <children>
-          <grid id="c29c0" binding="multiTagPane" layout-manager="GridBagLayout">
-            <constraints>
-              <tabbedpane title="Untitled"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <scrollpane id="4e9e5" binding="tagPane">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                  <gridbag weightx="0.0" weighty="0.0"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </scrollpane>
-            </children>
-          </grid>
-        </children>
+        <children/>
       </tabbedpane>
     </children>
   </grid>

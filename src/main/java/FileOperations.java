@@ -24,7 +24,6 @@ class FileOperations
             }
             else
             {
-                //TODO: Make file, enter '1' as response
                 return "1";
             }
         }
@@ -83,6 +82,10 @@ class FileOperations
                 bw.newLine();
                 bw.newLine();
                 bw.newLine();
+                bw.newLine();
+                bw.newLine();
+                bw.newLine();
+                bw.newLine();
                 bw.close();
             }
 
@@ -114,7 +117,6 @@ class FileOperations
         return "";
     }
 
-    //TODO: Salt!
     //Easy way to store credentials and eventually salt
     static void storeCredentials(String mode, String toStore, int serverNumber)
     {
@@ -130,5 +132,55 @@ class FileOperations
         else if (mode.equals("updatedDate")) {
             writeFileContents("secure" + serverNumber + ".txt", 4, toStore);
         }
+    }
+
+    static int getNumSections()
+    {
+        File ifExists = new File("secData.txt");
+
+        if (ifExists.exists()) {
+            return Integer.parseInt(readFileContents("secData.txt", 1));
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    static void setNumSections(int updateValue)
+    {
+        writeFileContents("secData.txt", 1, "" + updateValue);
+    }
+
+    static void addNewSection(String sectionName)
+    {
+        setNumSections(getNumSections() + 1);
+        writeFileContents("secData.txt", getNumSections() + 1, sectionName);
+        writeFileContents("section" + sectionName + ".txt", 1, "" + 0);
+    }
+
+    static void addPane(String tag, String section)
+    {
+        int numberOfPanes = Integer.parseInt(readFileContents("section" + section + ".txt", 1));
+        int newNumPanes = numberOfPanes + 1;
+        writeFileContents("section" + section + ".txt", 1, "" + newNumPanes);
+        writeFileContents("section" + section + ".txt", numberOfPanes + 2, tag);
+    }
+
+    static String[] retrievePanes(String section)
+    {
+        String fileToRead = "section" + section + ".txt";
+        int numberOfPanes = Integer.parseInt(readFileContents(fileToRead, 1));
+
+        String[] panes = new String[numberOfPanes];
+        int paneCounter = 0;
+
+        for(int i = 2; i < numberOfPanes + 2; i++)
+        {
+            panes[paneCounter] = readFileContents(fileToRead, i);
+            paneCounter++;
+        }
+
+        return panes;
     }
 }

@@ -1,8 +1,13 @@
+import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilDateModel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Date;
 
 public class formGUI {
 
@@ -34,8 +39,7 @@ public class formGUI {
     private JTabbedPane sectionsPanel;
 
     //Possible to have multiples - multiple tags on display
-    private JScrollPane tagPane;
-    private JPanel multiTagPane;
+    private JPanel tagPane;
     private JButton sentDateButton;
     private JButton receivedDateButton;
     private JButton clearButton;
@@ -45,9 +49,13 @@ public class formGUI {
     private JButton newServerButton;
     private JPanel updatePanel;
 
-    public formGUI(String[] panes, String[] sections) {
+    public formGUI(String[] sections) {
 
         wholeWindow.setLayout(new GridLayout(0, 1));
+
+        UtilDateModel uDModel = new UtilDateModel();
+        JDatePanelImpl jDIPanel = new JDatePanelImpl(uDModel);
+        final JDatePickerImpl datePicker = new JDatePickerImpl(jDIPanel);
 
         //Buttons for the toolbar
 
@@ -116,27 +124,34 @@ public class formGUI {
 
         sentDateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
+
+                Date selectedDate = (Date) datePicker.getModel().getValue();
+
                 if (searchBox.getText().equals("")) {
-                    searchBox.append("Sent-Date " + searchTerm.getText());
+                    searchBox.append("Sent-Date " + selectedDate.toString());
                 }
                 else
                 {
-                    searchBox.append(" AND Sent-Date " + searchTerm.getText());
+                    searchBox.append(" AND Sent-Date " + selectedDate.toString());
                 }
             }
         });
 
         receivedDateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
+
+                Date selectedDate = (Date) datePicker.getModel().getValue();
+
                 if (searchBox.getText().equals("")) {
-                    searchBox.append("Received-Date " + searchTerm.getText());
+                    searchBox.append("Received-Date " + selectedDate.toString());
                 }
                 else
                 {
-                    searchBox.append(" AND Received-Date " + searchTerm.getText());
+                    searchBox.append(" AND Received-Date " + selectedDate.toString());
                 }
             }
         });
+        searchBoxButtons.add(datePicker);
 
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -152,7 +167,7 @@ public class formGUI {
             public void actionPerformed(ActionEvent actionEvent) {
                 String[] searchQuery = searchBox.getText().split(" ");
 
-                eMailObject[] editTag = applyTags? SkeletonClient.searchQuery(searchQuery, tagName.getText()) : SkeletonClient.searchQuery(searchQuery, " ");
+                eMailObject[] editTag = applyTags? SkeletonClient.searchQuery(searchQuery, tagName.getText()) : SkeletonClient.searchQuery(searchQuery, "");
 
                 ClientGUI.displayResults(editTag, searchQuery);
             }
@@ -199,6 +214,14 @@ public class formGUI {
         });
         updatePanel.add(newServerButton);
 
+        JButton newPaneButton = new JButton("Add Pane/Section");
+        newPaneButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                ClientGUI.addPaneSectionsGUI();
+            }
+        });
+        updatePanel.add(newPaneButton);
+
         toolBar.add(updatePanel);
         toolBar.add(searchBoxPanel);
         toolBar.add(applyTagPanel);
@@ -206,34 +229,41 @@ public class formGUI {
         wholeWindow.add(toolBar);
 
         for (String section : sections) {
-            for (String pane : panes) {
+            String[] panes = FileOperations.retrievePanes(section);
+            System.out.println(section + Arrays.toString(panes));
 
+            JPanel multiTagPane = new JPanel();
+            multiTagPane.setLayout(new GridLayout(0, 1));
+
+            for (String pane : panes) {
                 String[] searchArray = new String[2];
-                searchArray[0] = "Tag ";
+                searchArray[0] = "Tag";
                 searchArray[1] = pane;
 
-                eMailObject[] paneQueryResults = SkeletonClient.searchQuery(searchArray, " ");
+                tagPane = new JPanel();
+                tagPane.setLayout(new GridLayout(0, 1));
+                tagPane.setBorder(BorderFactory.createEtchedBorder());
 
-                JPanel[] singleEmailPanes = new JPanel[paneQueryResults.length];
+                eMailObject[] paneQueryResults = SkeletonClient.searchQuery(searchArray, "");
 
-                for (int i = 0; i < paneQueryResults.length; i++)
+                for (eMailObject result : paneQueryResults)
                 {
-                    final eMailObject currentEmail = paneQueryResults[i];
+                    final eMailObject currentEmail = result;
 
-                    singleEmailPanes[i] = new JPanel();
-                    singleEmailPanes[i].setLayout(new GridLayout(1, 0));
+                    JPanel currentPanel = new JPanel();
+                    currentPanel.setLayout(new GridLayout(1, 0));
 
                     JLabel receivedDate = new JLabel();
                     receivedDate.setText(currentEmail.getReceivedDate().toString());
-                    singleEmailPanes[i].add(receivedDate);
+                    currentPanel.add(receivedDate);
 
                     JLabel subjectLine = new JLabel();
                     subjectLine.setText(currentEmail.getSubject());
-                    singleEmailPanes[i].add(subjectLine);
+                    currentPanel.add(subjectLine);
 
                     JLabel senders = new JLabel();
                     senders.setText(currentEmail.getSenders().toString());
-                    singleEmailPanes[i].add(senders);
+                    currentPanel.add(senders);
 
                     JLabel tags = new JLabel();
                     if (currentEmail.getTags() != null) {
@@ -243,11 +273,11 @@ public class formGUI {
                     {
                         tags.setText("No Tags Added!");
                     }
-                    singleEmailPanes[i].add(tags);
+                    currentPanel.add(tags);
 
                     JPanel buttons = new JPanel();
 
-                    JButton readButton = new JButton();
+                    JButton readButton = new JButton("Read");
                     readButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.readEmail(currentEmail);
@@ -255,7 +285,7 @@ public class formGUI {
                     });
                     buttons.add(readButton);
 
-                    JButton tagButton = new JButton();
+                    JButton tagButton = new JButton("Tag");
                     tagButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.addTagGUI(currentEmail);
@@ -263,11 +293,13 @@ public class formGUI {
                     });
                     buttons.add(tagButton);
 
-                    singleEmailPanes[i].add(buttons);
-                    tagPane.add(singleEmailPanes[i]);
+                    currentPanel.add(buttons);
+                    tagPane.add(currentPanel);
+                    tagPane.setVisible(true);
                 }
 
                 multiTagPane.add(tagPane);
+                multiTagPane.setVisible(true);
             }
 
             sectionsPanel.addTab(section, multiTagPane);
@@ -277,11 +309,11 @@ public class formGUI {
         wholeWindow.add(sectionsPanel);
     }
 
-    public static void main(String[] args1, String[] args2) {
+    public static void main(String[] args1) {
         JFrame frame = new JFrame("Skeleton Email Client, Jack Evans 2017");
-        frame.setContentPane(new formGUI(args1, args2).wholeWindow);
+        frame.setContentPane(new formGUI(args1).wholeWindow);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
         frame.setVisible(true);
+        frame.pack();
     }
 }
