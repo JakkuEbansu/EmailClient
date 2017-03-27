@@ -14,12 +14,12 @@ public class SkeletonClient
     public static void main(String [] args)
     {
         //On first boot: (Does secure file exist..?)
-        File ifExists = new File("secure0.txt");
+        File ifMailDataExists = new File("mailData.txt");
 
-        if (!ifExists.exists())
+        if (!ifMailDataExists.exists())
         {
-            //Prompt for mailhost, username, password of as many clients as desired- save to file
-            CredentialsPromptGUI.promptGUI();
+            //If the program has not run before, create server data file - number of servers added = 0
+            FileOperations.writeFileContents("mailData.txt", 1, "0");
         }
 
         //Retrieve emails from IMAP, store to database
@@ -109,6 +109,7 @@ public class SkeletonClient
                             email.getSubject(), email.getMessageNumber(), currentServer);
                 }
 
+
                 storeToDatabase(emailArray);
         }
         catch (Exception mailEx) {
@@ -171,7 +172,6 @@ public class SkeletonClient
             em.getTransaction().commit();
 
             TypedQuery<eMailObject> outputQuery = em.createQuery("SELECT eMail FROM eMailObject email WHERE eMail.message_ID = " + email.getMessage_ID(), eMailObject.class);
-            System.out.println(Arrays.toString(outputQuery.getSingleResult().getTags().toArray()));
         }
         return 0;
     }
@@ -179,6 +179,7 @@ public class SkeletonClient
     //Retrieve emails from database, dependant on query
     static eMailObject[] searchQuery(String[] providedQuery, String tagName)
     {
+        System.out.println(Arrays.toString(providedQuery));
         //Set up connection to database
         EntityManagerFactory emf =
                 Persistence.createEntityManagerFactory("emailStorage.odb");
@@ -230,7 +231,7 @@ public class SkeletonClient
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Sender ")) {
                     //WHERE email sender contains search term
-                    completeQuery = completeQuery.concat("eMail.getSenders().toArray() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.getSenders()");
                     counter = counter + 2;
 
                 } else if (providedQuery[counter].equalsIgnoreCase("Sent-Date ")) {
@@ -262,12 +263,14 @@ public class SkeletonClient
                     }
                 } else if (providedQuery[counter].equalsIgnoreCase("Recipients ")) {
                     //WHERE email recipients contain particular String
-                    completeQuery = completeQuery.concat("eMail.getRecipients().toArray().toString() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.getRecipients()");
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Tag ")) {
                     //WHERE email is already tagged with another tag
-                    completeQuery = completeQuery.concat("eMail.tags.toArray().toString() LIKE '%" + providedQuery[counter + 1] + "%' ");
+                    completeQuery = completeQuery.concat(" '" + providedQuery[counter + 1] + "' MEMBER OF eMail.tags");
                     counter = counter + 2;
+
                 } else if (providedQuery[counter].equalsIgnoreCase("Message_ID ")) {
                     //WHERE email matches message ID - probably just used for behind the scenes search
                     completeQuery = completeQuery.concat("eMail.getMessage_ID() = " + providedQuery[counter + 1] + " ");

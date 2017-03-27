@@ -1,0 +1,4 @@
+imap.gmail.com
+skeletonemailtest@gmail.com
+testing123
+1490601834765

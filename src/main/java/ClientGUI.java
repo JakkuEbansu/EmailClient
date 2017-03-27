@@ -1,3 +1,5 @@
+import com.objectdb.o.EXP;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -121,6 +123,8 @@ public class ClientGUI
 
         for (String component : splitBody)
         {
+            System.out.println(" \" " + component + " \" ");
+            component = component.concat("?");
             final JLabel componentLabel = new JLabel(component);
             inlineReplies.add(componentLabel);
             emailQuestions[currentArrayIndex] = component;
@@ -182,22 +186,21 @@ public class ClientGUI
 
         JPanel mailServerButtonPanel = new JPanel();
 
-        int currentServer = 0;
+        final JTextArea emailServer = new JTextArea();
+        emailInfo.add(emailServer);
+        emailServer.setEditable(false);
 
         for (int i = 0; i < numberOfServers; i++)
         {
-            JButton mailServerButton = new JButton(FileOperations.retrieveCredentials("userName", i) + ", " +
-                    FileOperations.retrieveCredentials("mailHost", i));
+            final int currentServer = i;
+            JButton mailServerButton = new JButton(FileOperations.retrieveCredentials("userName", i));
 
-            currentServer = i;
-
-            /*mailServerButton.addActionListener(new ActionListener() {
+            mailServerButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent actionEvent)
                 {
-                    userName = FileOperations.retrieveCredentials("userName", currentServer);
-                    mailHost = FileOperations.retrieveCredentials("mailHost", currentServer);
+                    emailServer.setText(FileOperations.retrieveCredentials("userName", currentServer));
                 }
-            });*/
+            });
 
             mailServerButtonPanel.add(mailServerButton);
         }
@@ -228,10 +231,15 @@ public class ClientGUI
                     alertLabel = new JLabel("Add Email recipient!");
                     writeEmailContainer.add(alertLabel);
                 }
+                else if (emailServer.getText().equals(""))
+                {
+                    alertLabel = new JLabel("Select Email Server to send from!");
+                    writeEmailContainer.add(alertLabel);
+                }
                 else
                 {
                     SkeletonClient.writeNew(recipient.getText(),
-                            desiredTitle.getText(), emailBody.getText(), 0);
+                            desiredTitle.getText(), emailBody.getText(), Integer.parseInt(emailServer.getText()));
                 }
             }
         });
@@ -289,6 +297,15 @@ public class ClientGUI
             public void actionPerformed(ActionEvent actionEvent) { writeEmailReply(targetEmail); }
         });
         buttonsPanel.add(addReply);
+
+        final JButton customReply = new JButton("Reply using custom reply points");
+        customReply.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                ExpandedReplies reply = new ExpandedReplies();
+                reply.defineReplyPoints(targetEmail);
+            }
+        });
+        buttonsPanel.add(customReply);
 
         readEmailWindow.setVisible(true);
         readEmailWindow.pack();

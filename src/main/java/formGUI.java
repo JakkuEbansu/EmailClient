@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 public class formGUI {
 
@@ -29,22 +30,11 @@ public class formGUI {
     //The entire window
     private JPanel wholeWindow;
 
-    //Panel for display of a single email
-    private JPanel singleEmailPane;
-    private JLabel emailHeader;
-    private JLabel senderLabel;
-    private JLabel timeSent;
-    private JButton readButton;
-    private JButton tagButton;
-    private JButton deleteButton;
-
     //Panel to display multiple panes (tag displays)
     private JTabbedPane sectionsPanel;
 
     //Possible to have multiples - multiple tags on display
     private JScrollPane tagPane;
-    private JLabel tagLabel;
-    private JPanel singleEmailButtons;
     private JPanel multiTagPane;
     private JButton sentDateButton;
     private JButton receivedDateButton;
@@ -52,22 +42,14 @@ public class formGUI {
     private JTextField tagName;
     private JButton tagApplyButton;
     private JPanel applyTagPanel;
+    private JButton newServerButton;
+    private JPanel updatePanel;
 
     public formGUI(String[] panes, String[] sections) {
-        //Buttons for the toolbar
-        newButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                ClientGUI.writeNewEmail();
-            }
-        });
-        toolBar.add(newButton);
 
-        syncButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                SkeletonClient.updateEmails();
-            }
-        });
-        toolBar.add(syncButton);
+        wholeWindow.setLayout(new GridLayout(0, 1));
+
+        //Buttons for the toolbar
 
         //Components for the searchbox - these should update the searchbox
         senders.addActionListener(new ActionListener() {
@@ -171,9 +153,8 @@ public class formGUI {
                 String[] searchQuery = searchBox.getText().split(" ");
 
                 eMailObject[] editTag = applyTags? SkeletonClient.searchQuery(searchQuery, tagName.getText()) : SkeletonClient.searchQuery(searchQuery, " ");
-                eMailObject[] results = SkeletonClient.searchQuery(searchQuery, " ");
 
-                ClientGUI.displayResults(results, searchQuery);
+                ClientGUI.displayResults(editTag, searchQuery);
             }
         });
 
@@ -183,7 +164,6 @@ public class formGUI {
         searchBoxPanel.add(sendQueryButton);
         searchBoxPanel.add(searchTerm);
 
-        JPanel applyTagPanel = new JPanel();
         applyTagPanel.setLayout(new GridLayout(0, 1));
 
         tagApplyButton.addActionListener(new ActionListener() {
@@ -194,10 +174,38 @@ public class formGUI {
 
         applyTagPanel.add(tagName);
         applyTagPanel.add(tagApplyButton);
+
+        updatePanel.setLayout(new GridLayout(0, 1));
+
+        newButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                ClientGUI.writeNewEmail();
+            }
+        });
+        updatePanel.add(newButton);
+
+        syncButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                SkeletonClient.updateEmails();
+            }
+        });
+        updatePanel.add(syncButton);
+
+        newServerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                AddServer serverAdd = new AddServer();
+                serverAdd.addServerWindow();
+            }
+        });
+        updatePanel.add(newServerButton);
+
+        toolBar.add(updatePanel);
+        toolBar.add(searchBoxPanel);
         toolBar.add(applyTagPanel);
 
-        for (String section : sections) {
+        wholeWindow.add(toolBar);
 
+        for (String section : sections) {
             for (String pane : panes) {
 
                 String[] searchArray = new String[2];
@@ -206,36 +214,40 @@ public class formGUI {
 
                 eMailObject[] paneQueryResults = SkeletonClient.searchQuery(searchArray, " ");
 
-                JPanel[] sep = new JPanel[paneQueryResults.length];
+                JPanel[] singleEmailPanes = new JPanel[paneQueryResults.length];
 
-                for (int i = 0; i < paneQueryResults.length; i++) {
-
-                    JLabel tsTxt = new JLabel();
-
+                for (int i = 0; i < paneQueryResults.length; i++)
+                {
                     final eMailObject currentEmail = paneQueryResults[i];
 
-                    sep[i] = new JPanel();
-                    sep[i].setLayout(new GridLayout(1, 0));
+                    singleEmailPanes[i] = new JPanel();
+                    singleEmailPanes[i].setLayout(new GridLayout(1, 0));
 
-                    tsTxt.setText(currentEmail.getReceivedDate().toString());
-                    sep[i].add(tsTxt);
+                    JLabel receivedDate = new JLabel();
+                    receivedDate.setText(currentEmail.getReceivedDate().toString());
+                    singleEmailPanes[i].add(receivedDate);
 
-                    JLabel ehtxt = new JLabel();
-                    ehtxt.setText(currentEmail.getSubject());
-                    sep[i].add(ehtxt);
+                    JLabel subjectLine = new JLabel();
+                    subjectLine.setText(currentEmail.getSubject());
+                    singleEmailPanes[i].add(subjectLine);
 
-                    JLabel sltxt = new JLabel();
-                    sltxt.setText(currentEmail.getSenders().toString());
-                    sep[i].add(sltxt);
+                    JLabel senders = new JLabel();
+                    senders.setText(currentEmail.getSenders().toString());
+                    singleEmailPanes[i].add(senders);
 
-                    JLabel tltxt = new JLabel();
+                    JLabel tags = new JLabel();
                     if (currentEmail.getTags() != null) {
-                        tltxt.setText(currentEmail.getTags().toString());
+                        tags.setText(currentEmail.getTags().toString());
                     }
-                    sep[i].add(tltxt);
+                    else
+                    {
+                        tags.setText("No Tags Added!");
+                    }
+                    singleEmailPanes[i].add(tags);
 
                     JPanel buttons = new JPanel();
 
+                    JButton readButton = new JButton();
                     readButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.readEmail(currentEmail);
@@ -243,6 +255,7 @@ public class formGUI {
                     });
                     buttons.add(readButton);
 
+                    JButton tagButton = new JButton();
                     tagButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
                             ClientGUI.addTagGUI(currentEmail);
@@ -250,31 +263,22 @@ public class formGUI {
                     });
                     buttons.add(tagButton);
 
-                    //TODO : Implement email deletion, eventually
-                /*deleteButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        ClientGUI.removeEmail(currentEmail);
-                    }
-                });
-                singleEmailButtons.add(deleteButton);*/
-
-                    sep[i].add(singleEmailButtons);
-                }
-
-                for (JPanel sepComponent : sep)
-                {
-                    tagPane.add(sepComponent);
+                    singleEmailPanes[i].add(buttons);
+                    tagPane.add(singleEmailPanes[i]);
                 }
 
                 multiTagPane.add(tagPane);
             }
 
             sectionsPanel.addTab(section, multiTagPane);
+
+            sectionsPanel.setVisible(true);
         }
+        wholeWindow.add(sectionsPanel);
     }
 
     public static void main(String[] args1, String[] args2) {
-        JFrame frame = new JFrame("formGUI");
+        JFrame frame = new JFrame("Skeleton Email Client, Jack Evans 2017");
         frame.setContentPane(new formGUI(args1, args2).wholeWindow);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
